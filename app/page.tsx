@@ -26,6 +26,19 @@ export default function Home() {
         {/* Overlay for Darkening Video */}
         <div className="absolute inset-0 bg-black opacity-50 z-0"></div>
       </div>
+      <video className="h-screen w-full object-cover" autoPlay loop muted>
+          <source src="/videos/searchCard.mp4" type="video/mp4" />
+      </video>
+      <video className="h-screen w-full object-cover" autoPlay loop muted>
+          <source src="/videos/recordCard.mp4" type="video/mp4" />
+      </video>
+      <video className="h-screen w-full object-cover" autoPlay loop muted>
+          <source src="/videos/familyCard.mp4" type="video/mp4" />
+      </video>
+      <video className="h-screen w-full object-cover" autoPlay loop muted>
+          <source src="/videos/createCard.mp4" type="video/mp4" />
+      </video>
+      
     </div>
   );
 }
