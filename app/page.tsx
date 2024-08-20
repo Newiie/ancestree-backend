@@ -9,7 +9,7 @@ export default function Home() {
       <NavBar />
 
       {/* Video Fullscreen Without Scrolling */}
-      <div className="relative">
+      <div className="relative rounded-[3px]">
         <video className="absolute top-0 left-0 h-screen w-full object-cover" autoPlay loop muted>
           <source src="/videos/backgroundHome.mp4" type="video/mp4" />
         </video>
