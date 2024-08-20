@@ -1,6 +1,7 @@
 import NavBar from '@/components/NavBar';
 import React from 'react';
 import Link from "next/link";
+import { KeyRound, Mail, User } from 'lucide-react';
 
 const Page = () => {
   return (
@@ -32,27 +33,42 @@ const Page = () => {
         <div className="w-full lg:w-[35%] bg-[#658165] flex flex-col justify-center items-center px-[5rem]">
           <h1 className='text-black mb-[3rem] text-[2rem] font-[500]'>Register Now!</h1>
           <form action="" className="flex flex-col gap-[1rem] w-full">
+            {/* Email Input */}
             <label className="text-black" htmlFor="email">Email:</label>
-            <input
-              type="text"
-              id="email"
-              name="email"
-              className="text-primary py-[0.5rem] px-[1rem] border border-gray-300 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <div className="relative flex items-center">
+              <Mail width={15} height={15} className="absolute left-3 text-primary" />
+              <input
+                type="text"
+                id="email"
+                name="email"
+                className="text-primary py-[0.5rem] pl-10 pr-[1rem] border border-gray-300 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-primary w-full"
+              />
+            </div>
+            
+            {/* Username Input */}
             <label className="text-black" htmlFor="username">Username:</label>
-            <input
-              type="username"
-              id="username"
-              name="username"
-              className="text-primary py-[0.5rem] px-[1rem] border border-gray-300 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <div className="relative flex items-center">
+              <User width={15} height={15} className="absolute left-3 text-primary" />
+              <input
+                type="text"
+                id="username"
+                name="username"
+                className="text-primary py-[0.5rem] pl-10 pr-[1rem] border border-gray-300 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-primary w-full"
+              />
+            </div>
+
+            {/* Password Input */}
             <label className="text-black" htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              className="text-primary py-[0.5rem] px-[1rem] border border-gray-300 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <div className="relative flex items-center">
+              <KeyRound width={15} height={15} className="absolute left-3 text-primary" />
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="text-primary py-[0.5rem] pl-10 pr-[1rem] border border-gray-300 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-primary w-full"
+              />
+            </div>
+
             <button className="py-[0.5rem] px-[1rem] text-[0.9rem] rounded-[3px] bg-primary hover:text-primary hover:bg-hover transition-colors duration-200 mt-[1rem]" type="submit">
               Register
             </button>
