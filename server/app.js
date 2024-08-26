@@ -21,8 +21,8 @@ logger.info('connecting to', config.MONGODB_URI)
 mongoose.connect(config.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 20000, // Increase the timeout to 20 seconds
-  socketTimeoutMS: 45000, // Increase the socket timeout to 45 seconds
+  serverSelectionTimeoutMS: 20000, 
+  socketTimeoutMS: 45000, 
 });
 
 app.use(cors())
