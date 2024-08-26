@@ -1,75 +1,59 @@
-const treeRouter = require('express').Router()
-const { User, Person } = require('../models/user')
+const express = require('express');
+const mongoose = require('mongoose');
+const PersonNode = require('../models/personNode'); 
+const Person = require('../models/person');
+const FamilyTree = require('../models/familyTree'); 
 
-// Add a child to a user (registered or not)
-treeRouter.post('/:id/children', async (request, response) => {
-    try {
-      console.log('Request body:', request.body);
-      console.log('Request params:', request.params);
-  
-      const { childId, childName, birthdate, deathdate } = request.body;
-      const user = await User.findById(request.params.id);
-  
-      if (!user) {
-        return response.status(404).json({ error: 'User not found' });
-      }
-  
-      if (childId) {
-        const child = await User.findById(childId);
-        if (child) {
-          user.children.push(child._id);
-          child.parents.push(user._id);
-          await child.save();
-        } else {
-          return response.status(404).json({ error: 'Child not found' });
-        }
-      } else {
-        user.children.push({
-            name: childName,
-            birthdate: new Date(birthdate),
-            deathdate: new Date(deathdate)
-          });
-      }
-  
-      await user.save();
-      response.status(200).json(user);
-    } catch (error) {
-      console.error(error);
-      response.status(400).json({ error: 'Bad Request' });
-    }
-  });
-  
-  
-  
-  // Add a parent to a user (registered or not)
-  treeRouter.post('/:id/parents', async (request, response) => {
-    const { parentId, parentName, birthdate, deathdate } = request.body;
-    const user = await User.findById(request.params.id);
-  
-    if (!user) {
-      return response.status(404).json({ error: 'User not found' });
-    }
-  
-    if (parentId) {
-      const parent = await User.findById(parentId);
-      if (parent) {
-        user.parents.push(parent._id);
-        parent.children.push(user._id);
-        await parent.save();
-      } else {
-        return response.status(404).json({ error: 'Parent not found' });
-      }
-    } else {
-      user.parents.push({
-          name: parentName,
-          birthdate: new Date(birthdate),
-          deathdate: new Date(deathdate)
-        });
-    }
-  
-    await user.save();
-    response.status(200).json(user);
-  });
-  
+const treeRouter = express.Router();
 
-module.exports = treeRouter
+treeRouter.post('/add-child', async (req, res) => {
+  console.log('Received request:', req.body); 
+
+  const { treeId, nodeId, childId } = req.body;
+
+  if (!treeId || !nodeId || !childId) {
+    return res.status(400).json({ message: 'Invalid request parameters' });
+  }
+
+  try {
+    const familyTree = await FamilyTree.findById(treeId);
+    if (!familyTree) {
+      console.log('Family tree not found');
+      return res.status(404).json({ message: 'Family tree not found' });
+    }
+
+    const parentNode = await PersonNode.findById(nodeId);
+    if (!parentNode) {
+      console.log('Parent node not found');
+      return res.status(404).json({ message: 'Parent node not found' });
+    }
+
+    let childNode = await PersonNode.findById(childId);
+    if (!childNode) {
+      childNode = new PersonNode({
+        person: childId,
+        parents: [nodeId],
+        children: []
+      });
+    } else if (!childNode.parents.includes(nodeId)) {
+      childNode.parents.push(nodeId);
+    }
+
+    await childNode.save();
+    
+    
+    if (!parentNode.children.includes(childNode._id)) {
+      parentNode.children.push(childNode._id);
+      await parentNode.save();
+    }
+
+    res.status(200).json({ message: 'Child added successfully' });
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
+module.exports = treeRouter;

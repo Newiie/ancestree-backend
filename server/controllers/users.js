@@ -1,12 +1,11 @@
 const bcrypt = require('bcrypt')
 const usersRouter = require('express').Router()
-const {User} = require('../models/user')
+const User = require('../models/user')
+const Person = require('../models/person')
 
 // Create a new user
 usersRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body;
-
-  // console.log('Received request body:', request.body);
 
   if (!username || !password) {
     console.log('Validation failed: Username or password missing');
@@ -15,7 +14,6 @@ usersRouter.post('/', async (request, response) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 10);
-
     const user = new User({
       username,
       name,
@@ -23,7 +21,6 @@ usersRouter.post('/', async (request, response) => {
     });
 
     const savedUser = await user.save();
-    // console.log('User saved successfully:', savedUser);
     response.status(201).json(savedUser);
   } catch (error) {
     console.error('Error saving user:', error);
@@ -34,43 +31,25 @@ usersRouter.post('/', async (request, response) => {
 // Get all users and populate notes, children, and parents
 usersRouter.get('/', async (request, response) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).exec(); // Remove .lean() to use Mongoose documents
 
-    // Manually populate children and parents
+    // Manually populate related persons (children and parents not directly stored in User anymore)
     const populatedUsers = await Promise.all(users.map(async (user) => {
-      const populatedChildren = await Promise.all(user.children.map(async (child) => {
-        if (child instanceof mongoose.Types.ObjectId) {
-          // Populate child if it's an ObjectId
-          return await User.findById(child).select('username name birthdate deathdate').lean();
-        } else {
-          // Return child as is if it's not an ObjectId
-          return child;
-        }
-      }));
-
-      const populatedParents = await Promise.all(user.parents.map(async (parent) => {
-        if (parent instanceof mongoose.Types.ObjectId) {
-          // Populate parent if it's an ObjectId
-          return await User.findById(parent).select('username name birthdate deathdate').lean();
-        } else {
-          // Return parent as is if it's not an ObjectId
-          return parent;
-        }
-      }));
+      // Assuming a method or logic to retrieve related persons (children and parents) for this user
+      const relations = await Person.find({ relatedUser: user._id }).select('name birthdate deathdate relatedUser').lean();
 
       return {
-        ...user.toJSON(),
-        children: populatedChildren,
-        parents: populatedParents
+        ...user.toJSON(), // Ensure the transformation is applied
+        relations // Adding relations to each user object
       };
     }));
 
     response.json(populatedUsers);
   } catch (error) {
+    console.error('Error fetching users:', error);
     response.status(500).json({ error: 'Something went wrong' });
   }
 });
-
 
 
 
