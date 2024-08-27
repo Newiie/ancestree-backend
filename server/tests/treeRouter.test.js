@@ -6,6 +6,8 @@ const app = require('../app');
 const api = supertest(app);
 const bcrypt = require('bcrypt');
 
+const { createUser, createPerson, createPersonNode, createFamilyTree } = require('./test_helper');
+
 // MODELS
 const Person = require('../models/person');
 const PersonNode = require('../models/personNode');
@@ -17,38 +19,49 @@ describe('Tree operations', () => {
   let rootNodeId;
   let parentId;
   let childNodeId;
+  let newParentId;
+  let newGrandparentId;
 
   beforeEach(async () => {
+    // Clear existing data
     await User.deleteMany({});
     await Person.deleteMany({});
     await PersonNode.deleteMany({});
     await FamilyTree.deleteMany({});
 
-    const passwordHash = await bcrypt.hash('sekret', 10);
-    const user = new User({ username: 'root', passwordHash });
-    const savedUser = await user.save();
-    rootUserId = savedUser._id;
+    // Create and save root user
+    rootUserId = await createUser('root', 'sekret');
 
-    const rootPerson = new Person({ name: 'Root Person' });
-    const savedPerson = await rootPerson.save();
+    // Create and save root person
+    const savedPerson = await createPerson('Root Person');
 
-    const rootNode = new PersonNode({ person: savedPerson._id, parents: [], children: [] });
-    const savedNode = await rootNode.save();
+    // Create and save root person node
+    const savedNode = await createPersonNode(savedPerson, [], []);
 
-    parentId = savedNode._id;
+    parentId = savedNode;
 
-    const familyTree = new FamilyTree({ owner: rootUserId, root: savedNode._id });
-    await familyTree.save();
+    // Create and save family tree
+    const familyTree = await createFamilyTree(rootUserId, savedNode);
 
-    rootNodeId = familyTree._id;
+    rootNodeId = familyTree;
 
-    const childPerson = new Person({ name: 'Child Person' });
-    const savedChildPerson = await childPerson.save();
+    // Create and save child person
+    const savedChildPerson = await createPerson('Child Person');
+    const savedChildNode = await createPersonNode(savedChildPerson, [], []);
 
-    const childNode = new PersonNode({ person: savedChildPerson._id, parents: [], children: [] });
-    const savedChildNode = await childNode.save();
+    childNodeId = savedChildNode;
 
-    childNodeId = savedChildNode._id;
+    // Create and save a new parent person
+    const savedNewParentPerson = await createPerson('New Parent Person');
+    const savedNewParentNode = await createPersonNode(savedNewParentPerson, [], []);
+
+    newParentId = savedNewParentNode;
+
+    // Create and save a new grandparent person
+    const savedNewGrandparentPerson = await createPerson('New Grandparent Person');
+    const savedNewGrandparentNode = await createPersonNode(savedNewGrandparentPerson, [], []);
+
+    newGrandparentId = savedNewGrandparentNode;
   });
 
   test('adding a child to a specific node succeeds', async () => {
@@ -65,6 +78,41 @@ describe('Tree operations', () => {
   
     const childNode = await PersonNode.findById(childNodeId);
     assert(childNode.parents.includes(parentId.toString()));
+  });
+  
+  test('adding a parent to a specific node succeeds', async () => {
+    const res = await api
+      .post('/api/trees/add-parent')
+      .send({ treeId: rootNodeId.toString(), nodeId: parentId.toString(), parentId: newParentId.toString() })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    assert.strictEqual(res.body.message, 'Parent added successfully');
+
+    const childNode = await PersonNode.findById(parentId);
+    assert(childNode.parents.includes(newParentId.toString()));
+
+    const newParentNode = await PersonNode.findById(newParentId);
+    console.log("NEW PARENT NODE", newParentNode);
+    assert(newParentNode.children.includes(parentId.toString()));
+  });
+
+  test('adding a grandparent to a specific node succeeds', async () => {
+    // Add new grandparent to the parent node
+    const res = await api
+      .post('/api/trees/add-parent')
+      .send({ treeId: rootNodeId.toString(), nodeId: newParentId.toString(), parentId: newGrandparentId.toString() })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    assert.strictEqual(res.body.message, 'Parent added successfully');
+
+    const parentNode = await PersonNode.findById(newParentId);
+    assert(parentNode.parents.includes(newGrandparentId.toString()));
+    console.log("GP TEST - PARENT", parentNode);
+    const newGrandparentNode = await PersonNode.findById(newGrandparentId);
+    console.log("GP TEST - GRAND PARENT", newGrandparentNode);
+    assert(newGrandparentNode.children.includes(newParentId.toString()));
   });
 
   after(async () => {
