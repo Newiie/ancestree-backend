@@ -30,9 +30,29 @@ async function createFamilyTree(ownerId, rootId) {
     return savedFamilyTree._id;
 }
 
+async function findAllPersonNodes() {
+  try {
+    const personNodes = await PersonNode.find({})
+      .populate('person') // Populate the person field
+      .populate({
+        path: 'parents',
+        populate: {
+          path: 'person', // Populate the person field of the parent nodes as well
+        },
+      })
+      .exec();
+
+    console.log('Person Nodes with their Parents and Person details:', personNodes);
+    return personNodes;
+  } catch (error) {
+    console.error('Error finding PersonNodes:', error);
+  }
+}
+
 module.exports = {
     createUser,
     createPerson,
     createPersonNode,
     createFamilyTree,
+    findAllPersonNodes
 };

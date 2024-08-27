@@ -7,4 +7,5 @@ const personSchema = new mongoose.Schema({
   relatedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }
 });
 const Person = mongoose.model('Person', personSchema);
+
 module.exports = Person

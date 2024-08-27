@@ -8,8 +8,6 @@ const treeRouter = express.Router();
 
 // ADD CHILD ROUTE
 treeRouter.post('/add-child', async (req, res) => {
-  // console.log('Received request:', req.body); 
-
   const { treeId, nodeId, childId } = req.body;
 
   if (!treeId || !nodeId || !childId) {
@@ -23,30 +21,32 @@ treeRouter.post('/add-child', async (req, res) => {
       return res.status(404).json({ message: 'Family tree not found' });
     }
 
-    const parentNode = await PersonNode.findById(nodeId);
+    const parentNode = await PersonNode.findById(nodeId).populate('person').populate('children').populate('parents');
     if (!parentNode) {
       console.log('Parent node not found');
       return res.status(404).json({ message: 'Parent node not found' });
     }
 
-    let childNode = await PersonNode.findById(childId);
+    let childNode = await PersonNode.findById(childId).populate('person').populate('parents');
     if (!childNode) {
       childNode = new PersonNode({
         person: childId,
         parents: [nodeId],
         children: []
       });
-    } else if (!childNode.parents.includes(nodeId)) {
+    } else if (!childNode.parents.some(parent => parent._id.equals(nodeId))) {
       childNode.parents.push(nodeId);
     }
 
     await childNode.save();
     
-    
-    if (!parentNode.children.includes(childNode._id)) {
+    if (!parentNode.children.some(child => child._id.equals(childNode._id))) {
       parentNode.children.push(childNode._id);
       await parentNode.save();
     }
+
+    console.log('Parent Node:', JSON.stringify(parentNode, null, 2));
+    console.log('Child Node:', JSON.stringify(childNode, null, 2));
 
     res.status(200).json({ message: 'Child added successfully' });
   } catch (err) {
@@ -57,8 +57,6 @@ treeRouter.post('/add-child', async (req, res) => {
 
 // ADD PARENT ROUTE
 treeRouter.post('/add-parent', async (req, res) => {
-  // console.log('Received request:', req.body);
-
   const { treeId, nodeId, parentId } = req.body;
 
   if (!treeId || !nodeId || !parentId) {
@@ -72,35 +70,36 @@ treeRouter.post('/add-parent', async (req, res) => {
       return res.status(404).json({ message: 'Family tree not found' });
     }
 
-    const childNode = await PersonNode.findById(nodeId);
+    const childNode = await PersonNode.findById(nodeId).populate('person').populate('parents');
     if (!childNode) {
       console.log('Child node not found');
       return res.status(404).json({ message: 'Child node not found' });
     }
 
-    let parentNode = await PersonNode.findById(parentId);
+    let parentNode = await PersonNode.findById(parentId).populate('person').populate('children');
     if (!parentNode) {
-      // Create a new parent node if it does not exist
       parentNode = new PersonNode({
         person: parentId,
         parents: [],
         children: [childNode._id]
       });
       await parentNode.save();
-    } else if (!parentNode.children.includes(childNode._id)) {
+    } else if (!parentNode.children.some(child => child._id.equals(childNode._id))) {
       parentNode.children.push(childNode._id);
       await parentNode.save();
     }
 
-    // Check if adding this parent will exceed the limit
     if (childNode.parents.length >= 2) {
       return res.status(400).json({ message: 'Cannot add more than two parents' });
     }
 
-    if (!childNode.parents.includes(parentNode._id)) {
+    if (!childNode.parents.some(parent => parent._id.equals(parentNode._id))) {
       childNode.parents.push(parentNode._id);
       await childNode.save();
     }
+
+    console.log('Parent Node:', JSON.stringify(parentNode, null, 2));
+    console.log('Child Node:', JSON.stringify(childNode, null, 2));
 
     res.status(200).json({ message: 'Parent added successfully' });
   } catch (err) {
@@ -118,86 +117,76 @@ treeRouter.post('/check-relationship', async (req, res) => {
   }
 
   try {
-    // Find the reference node and destination node
-    const referenceNode = await PersonNode.findById(referenceId).populate('parents').populate('children').exec();
-    const destinationNode = await PersonNode.findById(destinationId).populate('parents').exec();
+    const referenceNode = await PersonNode.findById(referenceId).populate('person').populate('parents').populate('children').exec();
+    const destinationNode = await PersonNode.findById(destinationId).populate('person').populate('parents').populate('children').exec();
 
     if (!referenceNode || !destinationNode) {
       return res.status(404).json({ message: 'Node(s) not found' });
     }
 
-    console.log("REFERENCE NODE", referenceNode);
-    console.log("DEST NODE", destinationNode)
+    console.log("REFERENCE NODE", JSON.stringify(referenceNode, null, 2));
+    console.log("DEST NODE", JSON.stringify(destinationNode, null, 2));
 
-    // Helper function to check if a node is in the ancestors of another node
-    const isAncestor = async (ancestorId, node) => {
-      console.log(`Checking if ${ancestorId} is an ancestor of node ${node._id}`);
+    const isAncestor = async (ancestorId, node, generation = 1) => {
+      console.log(`Entering generation ${generation}: Checking node ${node._id || node} with parents count: ${node.parents.length}`);
     
       if (node.parents.length === 0) {
-        console.log(`Node ${node._id} has no parents, returning false`);
+        console.log(`Generation ${generation}: Node ${node._id || node} has no parents. Returning false.`);
         return false;
       }
     
       for (const parent of node.parents) {
-        console.log(`Checking parent ${parent._id || parent} of node ${node._id}`);
+        const fullParentNode = await PersonNode.findById(parent._id || parent).populate('parents').populate('person').exec();
         
-        // Fetch the full parent node if not already populated
-        const fullParentNode = await PersonNode.findById(parent._id || parent).populate('parents').exec();
-        console.log(`Full parent node: ${JSON.stringify(fullParentNode, null, 2)}`);
-        
+        console.log(`Generation ${generation}: Checking parent node ${fullParentNode._id}`);
+    
         if (fullParentNode._id.toString() === ancestorId) {
-          console.log(`Ancestor found: ${ancestorId} is a direct parent of node ${node._id}`);
-          return true;
+          console.log(`Generation ${generation}: Found ancestor with ID ${ancestorId} at generation ${generation}`);
+          return generation;
         }
     
-        // Recursively check the parent's ancestors
-        const isParentAncestor = await isAncestor(ancestorId, fullParentNode);
-        if (isParentAncestor) {
-          console.log(`Ancestor found through recursion: ${ancestorId} is an ancestor of node ${node._id}`);
-          return true;
+        const ancestorGeneration = await isAncestor(ancestorId, fullParentNode, generation + 1);
+        if (ancestorGeneration) {
+          console.log(`Generation ${generation}: Found ancestor in earlier generation. Returning generation ${ancestorGeneration}`);
+          return ancestorGeneration;
         }
       }
     
-      console.log(`No ancestor found for ${ancestorId} in the ancestry of node ${node._id}`);
+      console.log(`Generation ${generation}: No match found for ancestor ${ancestorId} in node ${node._id || node}. Returning false.`);
       return false;
     };
     
 
-    // Helper function to check if a node is in the descendants of another node
-    const isDescendant = async (descendantId, node) => {
-      console.log(`Checking if ${descendantId} is a descendant of node ${node._id}`);
+    const isDescendant = async (descendantId, node, generation = 1) => {
+      console.log(`Entering generation ${generation}: Checking node ${node._id || node} with children count: ${node.children.length}`);
     
       if (node.children.length === 0) {
-        console.log(`Node ${node._id} has no children, returning false`);
+        console.log(`Generation ${generation}: Node ${node._id || node} has no children. Returning false.`);
         return false;
       }
     
       for (const child of node.children) {
-        console.log(`Checking child ${child._id || child} of node ${node._id}`);
+        const fullChildNode = await PersonNode.findById(child._id || child).populate('children').populate('person').exec();
         
-        // Fetch the full child node if not already populated
-        const fullChildNode = await PersonNode.findById(child._id || child).populate('children').exec();
-        console.log(`Full child node: ${JSON.stringify(fullChildNode, null, 2)}`);
-        
+        console.log(`Generation ${generation}: Checking child node ${fullChildNode._id}`);
+    
         if (fullChildNode._id.toString() === descendantId) {
-          console.log(`Descendant found: ${descendantId} is a direct child of node ${node._id}`);
-          return true;
+          console.log(`Generation ${generation}: Found descendant with ID ${descendantId} at generation ${generation}`);
+          return generation;
         }
     
-        // Recursively check the child's descendants
-        const isChildDescendant = await isDescendant(descendantId, fullChildNode);
-        if (isChildDescendant) {
-          console.log(`Descendant found through recursion: ${descendantId} is a descendant of node ${node._id}`);
-          return true;
+        const descendantGeneration = await isDescendant(descendantId, fullChildNode, generation + 1);
+        if (descendantGeneration) {
+          console.log(`Generation ${generation}: Found descendant in deeper generation. Returning generation ${descendantGeneration}`);
+          return descendantGeneration;
         }
       }
     
-      console.log(`No descendant found for ${descendantId} in the descendants of node ${node._id}`);
+      console.log(`Generation ${generation}: No match found for descendant ${descendantId} in node ${node._id || node}. Returning false.`);
       return false;
     };
     
 
-    // Helper function to check if nodes are siblings
     const areSiblings = (node1, node2) => {
       const sharedParents = node1.parents.filter(parentId => 
         node2.parents.some(parentId2 => parentId.toString() === parentId2.toString())
@@ -205,26 +194,72 @@ treeRouter.post('/check-relationship', async (req, res) => {
       return sharedParents.length > 0;
     };
 
+    const findUncleAuntOrNephewNiece = async (node1, node2) => {
+      for (const parent of node1.parents) {
+        const parentNode = await PersonNode.findById(parent._id || parent).populate('children').populate('person').exec();
+        const isSibling = areSiblings(parentNode, node2);
+        if (isSibling) return 'uncle/aunt';
+        
+        const isUncleAunt = await isDescendant(node2._id, parentNode, 2);
+        if (isUncleAunt) return 'nephew/niece';
+      }
+
+      return false;
+    };
+
+    const findCousin = async (node1, node2) => {
+      for (const parent of node1.parents) {
+        const parentNode = await PersonNode.findById(parent._id || parent).populate('children').populate('person').exec();
+
+        for (const uncleAunt of parentNode.children) {
+          const fullUncleAuntNode = await PersonNode.findById(uncleAunt._id || uncleAunt).populate('children').populate('person').exec();
+          
+          for (const cousin of fullUncleAuntNode.children) {
+            if (cousin._id.toString() === node2._id.toString()) {
+              return 'cousin';
+            }
+          }
+        }
+      }
+
+      return false;
+    };
+
     let relationshipType = 'no relationship';
 
-    // Determine the relationship type
-    if (await isAncestor(destinationId, referenceNode)) {
-      const parent = referenceNode.parents.find(parentId => parentId._id.toString() === destinationId);
-      relationshipType = parent ? 'parent' : 'grandparent';
-    } else if (await isDescendant(destinationId, referenceNode)) {
-      const child = referenceNode.children.find(childId => childId._id.toString() === destinationId);
-      relationshipType = child ? 'child' : 'grandchild';
+    const ancestorGeneration = await isAncestor(destinationId, referenceNode);
+    const descendantGeneration = await isDescendant(destinationId, referenceNode);
+
+    console.log("ANCESTOR GENERATION", ancestorGeneration)
+    console.log("DESCENDANT GENERATION", descendantGeneration)
+    if (ancestorGeneration) {
+      if (ancestorGeneration === 1) relationshipType = 'parent';
+      else if (ancestorGeneration === 2) relationshipType = 'grandparent';
+      else relationshipType = `great-${'great-'.repeat(ancestorGeneration - 3)}grandparent`;
+    } else if (descendantGeneration) {
+      if (descendantGeneration === 1) relationshipType = 'child';
+      else if (descendantGeneration === 2) relationshipType = 'grandchild';
+      else relationshipType = `great-${'great-'.repeat(descendantGeneration - 3)}grandchild`;
     } else if (areSiblings(referenceNode, destinationNode)) {
       relationshipType = 'sibling';
+    } else {
+      const uncleAuntNephewNiece = await findUncleAuntOrNephewNiece(referenceNode, destinationNode);
+      if (uncleAuntNephewNiece) {
+        relationshipType = uncleAuntNephewNiece;
+      } else {
+        const cousin = await findCousin(referenceNode, destinationNode);
+        if (cousin) {
+          relationshipType = cousin;
+        }
+      }
     }
 
-    console.log("BACKEND ", relationshipType)
+    console.log("BACKEND ", relationshipType);
     res.status(200).json({ relationshipType });
   } catch (error) {
-    console.error(error);
+    console.error('Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 
 module.exports = treeRouter;
