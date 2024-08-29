@@ -56,9 +56,9 @@ const  addParent = async (treeId, nodeId, parentId) => {
       console.log("IT HAS 2 PARENTS ALREADY!");
       return { status: 400, message: 'Cannot add more than two parents' };
     }
-    console.log("PARENT ID ", parentId)
+    // console.log("PARENT ID ", parentId)
     let parentNode = await treeRepository.getPersonNodeById(parentId, ['person', 'children']);
-    console.log("TEST PARENT NODE", parentNode);
+    // console.log("TEST PARENT NODE", parentNode);
     if (!parentNode) {
       parentNode = await treeRepository.createPersonNode({ person: parentId, children: [childNode._id] });
     } else {
@@ -84,6 +84,9 @@ const checkRelationship = async (referenceId, destinationId) => {
     const referenceNode = await treeRepository.getPersonNodeById(referenceId, ['person', 'parents', 'children']);
     const destinationNode = await treeRepository.getPersonNodeById(destinationId, ['person', 'parents', 'children']);
     
+
+    // console.log(referenceNode)
+    // console.log(destinationNode)
     if (!referenceNode || !destinationNode) {
       console.log("NOT FOUND BOTH NODES")
       return { status: 404, message: 'Node(s) not found' };
@@ -108,44 +111,25 @@ const isAncestor = async (ancestorId, node, generation = 1) => {
     const ancestorGeneration = await isAncestor(ancestorId, fullParentNode, generation + 1);
     if (ancestorGeneration) return ancestorGeneration;
   }
-
-  return false;
 };
 
-const isDescendant = async (descendantId, node, generation = 1) => {
-  if (node.children.length === 0) return false;
 
-  for (const child of node.children) {
-    const fullChildNode = await treeRepository.getPersonNodeById(child._id || child, ['children', 'person']);
-    if (fullChildNode._id.toString() === descendantId) return generation;
-
-    const descendantGeneration = await isDescendant(descendantId, fullChildNode, generation + 1);
-    if (descendantGeneration) return descendantGeneration;
-  }
-
-  return false;
-};
 
 const areSiblings = (node1, node2) => {
-  const sharedParents = node1.parents.filter(parentId =>
-    node2.parents.some(parentId2 => parentId.toString() === parentId2.toString())
-  );
+  // Flatten and normalize parent arrays, and convert all parent IDs to strings
+  const normalizeParents = (parents) => {
+    if (!Array.isArray(parents)) return [];
+    return parents.flat().map(parentId => parentId.toString());
+  };
+
+  const node1Parents = normalizeParents(node1.parents);
+  const node2Parents = normalizeParents(node2.parents);
+
+  // Check for shared parents
+  const sharedParents = node1Parents.filter(parentId => node2Parents.includes(parentId));
+  
   return sharedParents.length > 0;
 };
-
-const findUncleAuntOrNephewNiece = async (node1, node2) => {
-  for (const parent of node1.parents) {
-    const parentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['children', 'person']);
-    const isSibling = areSiblings(parentNode, node2);
-    if (isSibling) return { status: 200, message: 'Uncle/Aunt found', relationshipType: 'uncle/aunt' };
-
-    const isUncleAunt = await isDescendant(node2._id, parentNode, 2);
-    if (isUncleAunt) return { status: 200, message: 'Nephew/Niece found', relationshipType: 'nephew/niece' };
-  }
-
-  return false;
-};
-
 const findCousin = async (node1, node2) => {
   for (const parent of node1.parents) {
     const parentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['children', 'person']);
@@ -162,6 +146,64 @@ const findCousin = async (node1, node2) => {
   return false;
 };
 
+const findUncleAuntOrNephewNiece = async (node1, node2) => {
+  for (const parent of node1.parents) {
+    const parentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['children', 'parents', 'person']);
+    // console.log("PARENT NODE", parentNode);
+    // console.log("NODE 2 NODE", node2);
+
+    // Re-run the sibling check after fixing possible data issues
+    const isSibling = areSiblings(parentNode, node2);
+    // console.log("ISH SIBLING", isSibling)
+    if (isSibling) return { status: 200, message: 'Uncle/Aunt found', relationshipType: 'uncle/aunt' };
+
+    const isUncleAunt = await isDescendant(node2._id, parentNode, 2);
+    if (isUncleAunt) return { status: 200, message: 'Nephew/Niece found', relationshipType: 'nephew/niece' };
+  }
+
+  return false;
+};
+
+
+
+const isDescendant = async (descendantId, node, generation = 1, path = []) => {
+  // console.log("DES ID ", descendantId.toString(), "NODE ID", node._id.toString());
+
+  // Add the current node to the path
+  path.push({
+    nodeId: node._id.toString(),
+    nodeName: node.person.name,
+    generation: generation
+  });
+
+  // First, check if the current node is the descendant
+  if (node._id.toString() === descendantId.toString()) {
+    // console.log(`Descendant found: ${node.person.name} at generation ${generation}. Path:`, path);
+    return generation - 1;
+  }
+
+  if (node.children.length === 0) {
+    // console.log(`No children found at generation ${generation}. Current path:`, path);
+    return false;
+  }
+
+  // Recursively check each child
+  for (const child of node.children) {
+    const fullChildNode = await treeRepository.getPersonNodeById(child._id || child, ['children', 'person']);
+    // console.log(`Visiting child: ${fullChildNode.person.name} at generation ${generation + 1}. Current path:`, path);
+
+    const descendantGeneration = await isDescendant(descendantId, fullChildNode, generation + 1, [...path]);
+    if (descendantGeneration) {
+      return descendantGeneration;
+    }
+  }
+
+  // console.log(`Backtracking from node: ${node.person.name} at generation ${generation}. Current path:`, path);
+  // return false;
+};
+
+
+
 const determineRelationship = async (referenceNode, destinationNode) => {
   try {
 
@@ -169,10 +211,10 @@ const determineRelationship = async (referenceNode, destinationNode) => {
 
     // Check if referenceNode is an ancestor of destinationNode
     const ancestorGeneration = await isAncestor(destinationNode._id.toString(), referenceNode);
-
+    // console.log("ANCESTOR", ancestorGeneration)
     // Check if referenceNode is a descendant of destinationNode
     const descendantGeneration = await isDescendant(destinationNode._id.toString(), referenceNode);
-
+    // console.log("DESCENT", descendantGeneration)
     if (ancestorGeneration) {
       if (ancestorGeneration === 1) relationshipType = 'parent';
       else if (ancestorGeneration === 2) relationshipType = 'grandparent';
@@ -185,6 +227,7 @@ const determineRelationship = async (referenceNode, destinationNode) => {
       relationshipType = 'sibling';
     } else {
       const uncleAuntNephewNiece = await findUncleAuntOrNephewNiece(referenceNode, destinationNode);
+      // console.log("UNCLE AUNT", uncleAuntNephewNiece)
       if (uncleAuntNephewNiece) {
         relationshipType = uncleAuntNephewNiece.relationshipType;
       } else {

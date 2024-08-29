@@ -2,6 +2,9 @@ const express = require('express');
 const treeService = require('../services/treeService');
 const treeRepository = require('../repositories/treeRepository'); // Ensure this is included for the check-relationship route
 const treeRouter = express.Router();
+const {jwtMiddleware} = require('../utils/middleware');
+
+// treeRouter.use(jwtMiddleware);
 
 // ADD CHILD ROUTE
 treeRouter.post('/add-child', async (req, res) => {

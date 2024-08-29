@@ -5,6 +5,8 @@ const supertest = require('supertest');
 const app = require('../app'); 
 const api = supertest(app);
 
+const treeRepository = require('../repositories/treeRepository')
+
 const { createUser, createPerson, createPersonNode, createFamilyTree, findAllPersonNodes } = require('./test_helper');
 
 // MODELS
@@ -60,15 +62,18 @@ describe('Tree operations', () => {
     parentNode.children.push(childNodeId);
     await parentNode.save();
 
-    // Update grandparent to include parent
-    const grandparentNode = await PersonNode.findById(grandparentId);
-    grandparentNode.children.push(parentId);
-    await grandparentNode.save();
-
     // Create and save uncle/aunt person node
     const savedUncleAuntPerson = await createPerson('Uncle Aunt Person');
     const savedUncleAuntNode = await createPersonNode(savedUncleAuntPerson, [grandparentId], []);
     uncleAuntId = savedUncleAuntNode;
+
+    // Update grandparent to include parent
+    const grandparentNode = await PersonNode.findById(grandparentId);
+    grandparentNode.children.push(parentId);
+    grandparentNode.children.push(uncleAuntId);
+    await grandparentNode.save();
+
+    
 
     // Create and save cousin person node
     const savedCousinPerson = await createPerson('Cousin Person');
@@ -85,21 +90,21 @@ describe('Tree operations', () => {
     // Check parent-child relationship
     let res = await api
       .post('/api/trees/check-relationship')
-      .send({ referenceId: parentId.toString(), destinationId: childNodeId.toString() })
+      .send({ referenceId: grandparentId.toString(), destinationId: childNodeId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
-    console.log("RES ", res.body)
-    assert.deepStrictEqual(res.body,  { status: 200, message: 'Relationship determined successfully', relationshipType: 'child' });
+
+    assert.deepStrictEqual(res.body,  { status: 200, message: 'Relationship determined successfully', relationshipType: 'grandchild' });
   
     // Check child-parent relationship (reverse of the above check)
     res = await api
       .post('/api/trees/check-relationship')
-      .send({ referenceId: childNodeId.toString(), destinationId: parentId.toString() })
+      .send({ referenceId: childNodeId.toString(), destinationId: grandparentId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
   
 
-    assert.deepStrictEqual(res.body,  { status: 200, message: 'Relationship determined successfully', relationshipType: 'parent' });
+    assert.deepStrictEqual(res.body,  { status: 200, message: 'Relationship determined successfully', relationshipType: 'grandparent' });
   });
   
 
@@ -111,7 +116,7 @@ describe('Tree operations', () => {
     // Check sibling relationship
     const res = await api
       .post('/api/trees/check-relationship')
-      .send({ referenceId: siblingNode.toString(), destinationId: childNodeId.toString() })
+      .send({ referenceId: uncleAuntId.toString(), destinationId: parentId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
   
@@ -129,40 +134,40 @@ describe('Tree operations', () => {
     assert.strictEqual(res.body.relationshipType, 'grandchild');
   });
 
-test('checking the great-grandparent and great-grandchild relationship', async () => {
+  test('checking the great-grandparent and great-grandchild relationship', async () => {
 
-    // Create and save great-grandparent person node
-    const savedGreatGrandparentPerson = await createPerson('Great Grandparent Person');
-    const savedGreatGrandparentNode = await createPersonNode(savedGreatGrandparentPerson, [], []);
-    const greatGrandparentId = savedGreatGrandparentNode;
-  
-    // Update great-grandparent to include grandparent as a child
-    const greatGrandparentNode = await PersonNode.findById(greatGrandparentId);
-    greatGrandparentNode.children.push(grandparentId);
-    await greatGrandparentNode.save();
-  
-    // Update grandparent to include great-grandparent as a parent
-    const grandparentNode = await PersonNode.findById(grandparentId);
-    grandparentNode.parents.push(greatGrandparentId);
-    await grandparentNode.save();
+      // Create and save great-grandparent person node
+      const savedGreatGrandparentPerson = await createPerson('Great Grandparent Person');
+      const savedGreatGrandparentNode = await createPersonNode(savedGreatGrandparentPerson, [], []);
+      const greatGrandparentId = savedGreatGrandparentNode;
     
-    // Check great-grandparent-great-grandchild relationship (from great-grandparent to child)
-    let res = await api
-      .post('/api/trees/check-relationship')
-      .send({ referenceId: greatGrandparentId.toString(), destinationId: childNodeId.toString() })
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
+      // Update great-grandparent to include grandparent as a child
+      const greatGrandparentNode = await PersonNode.findById(greatGrandparentId);
+      greatGrandparentNode.children.push(grandparentId);
+      await greatGrandparentNode.save();
     
-    assert.strictEqual(res.body.relationshipType, 'great-grandchild');
-  
-    // Check great-grandchild-great-grandparent relationship (from child to great-grandparent)
-    res = await api
-      .post('/api/trees/check-relationship')
-      .send({ referenceId: childNodeId.toString(), destinationId: greatGrandparentId.toString() })
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
+      // Update grandparent to include great-grandparent as a parent
+      const grandparentNode = await PersonNode.findById(grandparentId);
+      grandparentNode.parents.push(greatGrandparentId);
+      await grandparentNode.save();
+      
+      // Check great-grandparent-great-grandchild relationship (from great-grandparent to child)
+      let res = await api
+        .post('/api/trees/check-relationship')
+        .send({ referenceId: greatGrandparentId.toString(), destinationId: childNodeId.toString() })
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+      
+      assert.strictEqual(res.body.relationshipType, 'great-grandchild');
     
-    assert.strictEqual(res.body.relationshipType, 'great-grandparent');
+      // Check great-grandchild-great-grandparent relationship (from child to great-grandparent)
+      res = await api
+        .post('/api/trees/check-relationship')
+        .send({ referenceId: childNodeId.toString(), destinationId: greatGrandparentId.toString() })
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+      
+      assert.strictEqual(res.body.relationshipType, 'great-grandparent');
   });
   
 
@@ -237,16 +242,31 @@ test('checking the great-grandparent and great-grandchild relationship', async (
   });
   
 
-  // test('checking the uncle/aunt-nephew/niece relationship', async () => {
-  //   // Check uncle/aunt-nephew/niece relationship
-  //   const res = await api
-  //     .post('/api/trees/check-relationship')
-  //     .send({ referenceId: uncleAuntId.toString(), destinationId: childNodeId.toString() })
-  //     .expect(200)
-  //     .expect('Content-Type', /application\/json/);
-  
-  //   assert.strictEqual(res.body.relationshipType, 'uncle/aunt');
-  // });
+  test('checking the uncle/aunt-nephew/niece relationship', async () => {
+    // Part 1: Check uncle/aunt-nephew/niece relationship with uncle/aunt as reference
+    let res = await api
+      .post('/api/trees/check-relationship')
+      .send({ referenceId: uncleAuntId.toString(), destinationId: childNodeId.toString() })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    // console.log(await treeRepository.getPersonNodeById(grandparentId, ['parents', 'person', 'children']));
+    // console.log(await treeRepository.getPersonNodeById(parentId, ['parents', 'person']));
+
+    assert.strictEqual(res.body.relationshipType, 'nephew/niece');
+
+    // Part 2: Check nephew/niece-uncle/aunt relationship with nephew/niece as reference
+    res = await api
+      .post('/api/trees/check-relationship')
+      .send({ referenceId: childNodeId.toString(), destinationId: uncleAuntId.toString() })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    // console.log(await treeRepository.getPersonNodeById(grandparentId, ['parents', 'person', 'children']));
+    // console.log(await treeRepository.getPersonNodeById(parentId, ['parents', 'person']));
+
+    assert.strictEqual(res.body.relationshipType, 'uncle/aunt');
+});
 
   // test('checking the cousin relationship', async () => {
   //   // Check cousin relationship

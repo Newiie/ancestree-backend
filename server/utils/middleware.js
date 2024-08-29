@@ -1,12 +1,34 @@
 const logger = require('./logger');
 const { InvalidObjectIdError, NotFoundError } = require('./customErrors'); 
-
+const User = require("../models/user")
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method);
   logger.info('Path:  ', request.path);
   logger.info('Body:  ', request.body);
   logger.info('---');
   next();  // Ensure next is called
+};
+
+const jwtMiddleware = async (req, res, next) => {
+  const authorization = req.get('authorization');
+  let token = null;
+
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    token = authorization.substring(7);
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, process.env.SECRET); // Use the secret key used for signing the token
+
+    if (!token || !decodedToken.id) {
+      return res.status(401).json({ error: 'token missing or invalid' });
+    }
+
+    req.user = await User.findById(decodedToken.id);
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'token missing or invalid' });
+  }
 };
 
 const unknownEndpoint = (request, response) => {
@@ -60,5 +82,6 @@ module.exports = errorHandler;
 module.exports = {
   requestLogger,
   unknownEndpoint,
-  errorHandler
+  errorHandler,
+  jwtMiddleware
 };
