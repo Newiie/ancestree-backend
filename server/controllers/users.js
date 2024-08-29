@@ -31,16 +31,13 @@ usersRouter.post('/', async (request, response) => {
 // Get all users and populate notes, children, and parents
 usersRouter.get('/', async (request, response) => {
   try {
-    const users = await User.find({}).exec(); // Remove .lean() to use Mongoose documents
-
-    // Manually populate related persons (children and parents not directly stored in User anymore)
+    const users = await User.find({}).exec(); 
     const populatedUsers = await Promise.all(users.map(async (user) => {
-      // Assuming a method or logic to retrieve related persons (children and parents) for this user
       const relations = await Person.find({ relatedUser: user._id }).select('name birthdate deathdate relatedUser').lean();
 
       return {
-        ...user.toJSON(), // Ensure the transformation is applied
-        relations // Adding relations to each user object
+        ...user.toJSON(), 
+        relations 
       };
     }));
 

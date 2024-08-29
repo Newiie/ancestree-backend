@@ -52,45 +52,52 @@ describe('Tree operations', () => {
   });
 
   test('adding multiple parents to a specific node succeeds and limits to two parents', async () => {
-    // Add the first two parents
-    for (let i = 0; i < 2; i++) {
+    try {
+      // Add the first two parents
+      for (let i = 0; i < 2; i++) {
         const res = await api
-            .post('/api/trees/add-parent')
-            .send({ treeId: rootNodeId.toString(), nodeId: childNodeIds[0].toString(), parentId: additionalParentIds[i].toString() })
-            .expect(200)
-            .expect('Content-Type', /application\/json/);
-
+          .post('/api/trees/add-parent')
+          .send({ treeId: rootNodeId.toString(), nodeId: childNodeIds[0].toString(), parentId: additionalParentIds[i].toString() })
+          .expect(200)
+          .expect('Content-Type', /application\/json/);
+  
         assert.strictEqual(res.body.message, 'Parent added successfully');
-    }
-
-    // Attempt to add a third parent, which should fail
-    const res = await api
+      }
+      console.log("ASDASDASDASDASD")
+      // Attempt to add a third parent, which should fail
+      const res = await api
         .post('/api/trees/add-parent')
         .send({ treeId: rootNodeId.toString(), nodeId: childNodeIds[0].toString(), parentId: additionalParentIds[2].toString() })
         .expect(400)
         .expect('Content-Type', /application\/json/);
-
-    assert.strictEqual(res.body.message, 'Cannot add more than two parents');
-
-    // Verify that only two parents were added
-    const childNode = await PersonNode.findById(childNodeIds[0]).populate('parents');
-
-    // Print the structure of the child node
-    console.log("Child Node Data:");
-    console.log(`Node ID: ${childNode._id}`);
-    console.log(`Parents (${childNode.parents.length}):`);
-    childNode.parents.forEach(parent => {
+  
+      console.log('Response:', res.body);
+  
+      assert.strictEqual(res.body.message, 'Cannot add more than two parents');
+  
+      // Verify that only two parents were added
+      const childNode = await PersonNode.findById(childNodeIds[0]).populate('parents');
+  
+      // Print the structure of the child node
+      console.log('Child Node Data:');
+      console.log(`Node ID: ${childNode._id}`);
+      console.log(`Parents (${childNode.parents.length}):`);
+      childNode.parents.forEach(parent => {
         console.log(`  Parent ID: ${parent._id}`);
         console.log(`    Name: ${parent.name}`);
-        // Add more details if necessary
-    });
-
-    assert.strictEqual(childNode.parents.length, 2);
-
-    for (let i = 0; i < 2; i++) {
+      });
+  
+      assert.strictEqual(childNode.parents.length, 2);
+  
+      for (let i = 0; i < 2; i++) {
         assert(childNode.parents.some(parent => parent._id.toString() === additionalParentIds[i].toString()));
+      }
+    } catch (error) {
+      console.error('Test Error:', error);
+      throw error;
     }
-});
+  });
+  
 
   
   after(async () => {

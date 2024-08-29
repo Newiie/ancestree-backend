@@ -88,10 +88,10 @@ describe('Tree operations', () => {
       .expect('Content-Type', /application\/json/);
 
     assert.strictEqual(res.body.message, 'Parent added successfully');
-
+    console.log("PARENT TEST - PARENT", res.body);
     const childNode = await PersonNode.findById(parentId);
+    console.log("PARENT TEST - PARENT", childNode);
     assert(childNode.parents.includes(newParentId.toString()));
-
     const newParentNode = await PersonNode.findById(newParentId);
     console.log("NEW PARENT NODE", newParentNode);
     assert(newParentNode.children.includes(parentId.toString()));
