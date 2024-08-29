@@ -88,8 +88,8 @@ describe('Tree operations', () => {
       .send({ referenceId: parentId.toString(), destinationId: childNodeId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
-    
-    assert.strictEqual(res.body.relationshipType, 'child');
+    console.log("RES ", res.body)
+    assert.deepStrictEqual(res.body,  { status: 200, message: 'Relationship determined successfully', relationshipType: 'child' });
   
     // Check child-parent relationship (reverse of the above check)
     res = await api
@@ -97,9 +97,11 @@ describe('Tree operations', () => {
       .send({ referenceId: childNodeId.toString(), destinationId: parentId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
-    
-    assert.strictEqual(res.body.relationshipType, 'parent');
+  
+
+    assert.deepStrictEqual(res.body,  { status: 200, message: 'Relationship determined successfully', relationshipType: 'parent' });
   });
+  
 
   test('checking the sibling relationship', async () => {
     // Create a sibling node
@@ -113,7 +115,7 @@ describe('Tree operations', () => {
       .expect(200)
       .expect('Content-Type', /application\/json/);
   
-    assert.strictEqual(res.body.relationshipType, 'sibling');
+    assert.deepStrictEqual(res.body, { status: 200, message: 'Relationship determined successfully', relationshipType: 'sibling' });
   });
 
   test('checking the grandparent-grandchild relationship', async () => {

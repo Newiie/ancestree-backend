@@ -39,7 +39,7 @@ const addChild = async (treeId, nodeId, childId) => {
   }
 };
 
-const addParent = async (treeId, nodeId, parentId) => {
+const  addParent = async (treeId, nodeId, parentId) => {
   try {
     const familyTree = await treeRepository.getFamilyTreeById(treeId);
     if (!familyTree) {
@@ -51,12 +51,12 @@ const addParent = async (treeId, nodeId, parentId) => {
       return { status: 404, message: 'Child node not found' };
     }
 
-    console.log("TEST CHILD NODE", childNode);
+    // console.log("TEST CHILD NODE", childNode);
     if (childNode.parents.length >= 2) {
       console.log("IT HAS 2 PARENTS ALREADY!");
       return { status: 400, message: 'Cannot add more than two parents' };
     }
-
+    console.log("PARENT ID ", parentId)
     let parentNode = await treeRepository.getPersonNodeById(parentId, ['person', 'children']);
     console.log("TEST PARENT NODE", parentNode);
     if (!parentNode) {
@@ -75,7 +75,7 @@ const addParent = async (treeId, nodeId, parentId) => {
     return { status: 200, message: 'Parent added successfully', parentNode, childNode };
   } catch (error) {
     console.error('Error in addParent:', error);
-    return { status: 500, message: 'Internal Server Error' };
+    throw error;
   }
 };
 
@@ -85,11 +85,12 @@ const checkRelationship = async (referenceId, destinationId) => {
     const destinationNode = await treeRepository.getPersonNodeById(destinationId, ['person', 'parents', 'children']);
     
     if (!referenceNode || !destinationNode) {
+      console.log("NOT FOUND BOTH NODES")
       return { status: 404, message: 'Node(s) not found' };
     }
 
     // Logic to determine relationship
-    const relationshipType = await treeRepository.determineRelationship(referenceNode, destinationNode);
+    const relationshipType = await determineRelationship(referenceNode, destinationNode);
     return { status: 200, message: 'Relationship determined successfully', relationshipType };
   } catch (error) {
     console.error('Error in checkRelationship:', error);
@@ -97,79 +98,80 @@ const checkRelationship = async (referenceId, destinationId) => {
   }
 };
 
-const determineRelationship = async (referenceNode, destinationNode) => {
-  try {
-    const isAncestor = async (ancestorId, node, generation = 1) => {
-      if (node.parents.length === 0) return false;
+const isAncestor = async (ancestorId, node, generation = 1) => {
+  if (node.parents.length === 0) return false;
 
-      for (const parent of node.parents) {
-        const fullParentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['parents', 'person']);
-        if (fullParentNode._id.toString() === ancestorId) return generation;
+  for (const parent of node.parents) {
+    const fullParentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['parents', 'person']);
+    if (fullParentNode._id.toString() === ancestorId) return generation;
 
-        const ancestorGeneration = await isAncestor(ancestorId, fullParentNode, generation + 1);
-        if (ancestorGeneration) return ancestorGeneration;
-      }
+    const ancestorGeneration = await isAncestor(ancestorId, fullParentNode, generation + 1);
+    if (ancestorGeneration) return ancestorGeneration;
+  }
 
-      return false;
-    };
+  return false;
+};
 
-    const isDescendant = async (descendantId, node, generation = 1) => {
-      if (node.children.length === 0) return false;
+const isDescendant = async (descendantId, node, generation = 1) => {
+  if (node.children.length === 0) return false;
 
-      for (const child of node.children) {
-        const fullChildNode = await treeRepository.getPersonNodeById(child._id || child, ['children', 'person']);
-        if (fullChildNode._id.toString() === descendantId) return generation;
+  for (const child of node.children) {
+    const fullChildNode = await treeRepository.getPersonNodeById(child._id || child, ['children', 'person']);
+    if (fullChildNode._id.toString() === descendantId) return generation;
 
-        const descendantGeneration = await isDescendant(descendantId, fullChildNode, generation + 1);
-        if (descendantGeneration) return descendantGeneration;
-      }
+    const descendantGeneration = await isDescendant(descendantId, fullChildNode, generation + 1);
+    if (descendantGeneration) return descendantGeneration;
+  }
 
-      return false;
-    };
+  return false;
+};
 
-    const areSiblings = (node1, node2) => {
-      const sharedParents = node1.parents.filter(parentId =>
-        node2.parents.some(parentId2 => parentId.toString() === parentId2.toString())
-      );
-      return sharedParents.length > 0;
-    };
+const areSiblings = (node1, node2) => {
+  const sharedParents = node1.parents.filter(parentId =>
+    node2.parents.some(parentId2 => parentId.toString() === parentId2.toString())
+  );
+  return sharedParents.length > 0;
+};
 
-    const findUncleAuntOrNephewNiece = async (node1, node2) => {
-      for (const parent of node1.parents) {
-        const parentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['children', 'person']);
-        const isSibling = areSiblings(parentNode, node2);
-        if (isSibling) return { status: 200, message: 'Uncle/Aunt found', relationshipType: 'uncle/aunt' };
+const findUncleAuntOrNephewNiece = async (node1, node2) => {
+  for (const parent of node1.parents) {
+    const parentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['children', 'person']);
+    const isSibling = areSiblings(parentNode, node2);
+    if (isSibling) return { status: 200, message: 'Uncle/Aunt found', relationshipType: 'uncle/aunt' };
 
-        const isUncleAunt = await isDescendant(node2._id, parentNode, 2);
-        if (isUncleAunt) return { status: 200, message: 'Nephew/Niece found', relationshipType: 'nephew/niece' };
-      }
+    const isUncleAunt = await isDescendant(node2._id, parentNode, 2);
+    if (isUncleAunt) return { status: 200, message: 'Nephew/Niece found', relationshipType: 'nephew/niece' };
+  }
 
-      return false;
-    };
+  return false;
+};
 
-    const findCousin = async (node1, node2) => {
-      for (const parent of node1.parents) {
-        const parentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['children', 'person']);
-        for (const uncleAunt of parentNode.children) {
-          const fullUncleAuntNode = await treeRepository.getPersonNodeById(uncleAunt._id || uncleAunt, ['children', 'person']);
-          for (const cousin of fullUncleAuntNode.children) {
-            if (cousin._id.toString() === node2._id.toString()) {
-              return { status: 200, message: 'Cousin found', relationshipType: 'cousin' };
-            }
-          }
+const findCousin = async (node1, node2) => {
+  for (const parent of node1.parents) {
+    const parentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['children', 'person']);
+    for (const uncleAunt of parentNode.children) {
+      const fullUncleAuntNode = await treeRepository.getPersonNodeById(uncleAunt._id || uncleAunt, ['children', 'person']);
+      for (const cousin of fullUncleAuntNode.children) {
+        if (cousin._id.toString() === node2._id.toString()) {
+          return { status: 200, message: 'Cousin found', relationshipType: 'cousin' };
         }
       }
+    }
+  }
 
-      return false;
-    };
+  return false;
+};
+
+const determineRelationship = async (referenceNode, destinationNode) => {
+  try {
 
     let relationshipType = 'no relationship';
 
     // Check if referenceNode is an ancestor of destinationNode
-    const ancestorGeneration = await isAncestor(referenceNode._id.toString(), destinationNode);
+    const ancestorGeneration = await isAncestor(destinationNode._id.toString(), referenceNode);
 
     // Check if referenceNode is a descendant of destinationNode
-    const descendantGeneration = await isDescendant(referenceNode._id.toString(), destinationNode);
+    const descendantGeneration = await isDescendant(destinationNode._id.toString(), referenceNode);
 
     if (ancestorGeneration) {
       if (ancestorGeneration === 1) relationshipType = 'parent';
@@ -192,8 +194,7 @@ const determineRelationship = async (referenceNode, destinationNode) => {
         }
       }
     }
-
-    return { status: 200, message: 'Relationship determined successfully', relationshipType };
+    return relationshipType ;
   } catch (error) {
     console.error('Error in determineRelationship:', error);
     return { status: 500, message: 'Internal Server Error' };

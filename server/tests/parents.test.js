@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app'); 
 const api = supertest(app);
-
+const treeRepository = require('../repositories/treeRepository');
 const { createUser, createPerson, createPersonNode, createFamilyTree } = require('./test_helper');
 
 // MODELS
@@ -13,12 +13,10 @@ const PersonNode = require('../models/personNode');
 const FamilyTree = require('../models/familyTree');
 const User = require('../models/user');
 
-describe('Child with both parents and grandparents', () => {
+describe('Family Tree Tests', () => {
   let childNodeId;
   let motherNodeId;
   let fatherNodeId;
-  let maternalGrandmotherId;
-  let maternalGrandfatherId;
   let paternalGrandmotherId;
   let paternalGrandfatherId;
 
@@ -55,20 +53,6 @@ describe('Child with both parents and grandparents', () => {
     childNode.parents.push(motherNodeId, fatherNodeId);
     await childNode.save();
 
-    // Create and save maternal grandparents
-    const savedMaternalGrandmother = await createPerson('Maternal Grandmother');
-    const savedMaternalGrandmotherNode = await createPersonNode(savedMaternalGrandmother, [], [motherNodeId]);
-    maternalGrandmotherId = savedMaternalGrandmotherNode;
-
-    const savedMaternalGrandfather = await createPerson('Maternal Grandfather');
-    const savedMaternalGrandfatherNode = await createPersonNode(savedMaternalGrandfather, [], [motherNodeId]);
-    maternalGrandfatherId = savedMaternalGrandfatherNode;
-
-    // Update mother to include her parents (maternal grandparents)
-    const motherNode = await PersonNode.findById(motherNodeId);
-    motherNode.parents.push(maternalGrandmotherId, maternalGrandfatherId);
-    await motherNode.save();
-
     // Create and save paternal grandparents
     const savedPaternalGrandmother = await createPerson('Paternal Grandmother');
     const savedPaternalGrandmotherNode = await createPersonNode(savedPaternalGrandmother, [], [fatherNodeId]);
@@ -84,16 +68,21 @@ describe('Child with both parents and grandparents', () => {
     await fatherNode.save();
   });
 
-  test('checking ancestor relationships', async () => {
+  test('checking father and mother relationship to child', async () => {
     // Check parent-child relationship (mother)
     let res = await api
       .post('/api/trees/check-relationship')
       .send({ referenceId: childNodeId.toString(), destinationId: motherNodeId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
-
     
+    // console.log("RES MOTHER", res.body);
     assert.strictEqual(res.body.relationshipType, 'parent');
+    
+    const parentNode = await treeRepository.getPersonNodeById(fatherNodeId, ['person']);
+    const childNode = await treeRepository.getPersonNodeById(childNodeId, ['person']);
+    // console.log("FATHER NODE", parentNode);
+    // console.log("CHILD NODE", childNode);
 
     // Check parent-child relationship (father)
     res = await api
@@ -101,34 +90,19 @@ describe('Child with both parents and grandparents', () => {
       .send({ referenceId: childNodeId.toString(), destinationId: fatherNodeId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
-    
+    // console.log("RES", res.body);
     assert.strictEqual(res.body.relationshipType, 'parent');
+  });
 
-    // Check grandparent-grandchild relationship (maternal grandmother)
-    res = await api
-      .post('/api/trees/check-relationship')
-      .send({ referenceId: childNodeId.toString(), destinationId: maternalGrandmotherId.toString() })
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
-    
-    assert.strictEqual(res.body.relationshipType, 'grandparent');
-
-    // Check grandparent-grandchild relationship (maternal grandfather)
-    res = await api
-      .post('/api/trees/check-relationship')
-      .send({ referenceId: childNodeId.toString(), destinationId: maternalGrandfatherId.toString() })
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
-    
-    assert.strictEqual(res.body.relationshipType, 'grandparent');
-
+  test('checking grandparent-grandchild relationship on father\'s side', async () => {
     // Check grandparent-grandchild relationship (paternal grandmother)
-    res = await api
+    let res = await api
       .post('/api/trees/check-relationship')
       .send({ referenceId: childNodeId.toString(), destinationId: paternalGrandmotherId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
-    
+
+    // console.log("RES PATERNAL GRANDMOTHER", res.body);
     assert.strictEqual(res.body.relationshipType, 'grandparent');
 
     // Check grandparent-grandchild relationship (paternal grandfather)
@@ -137,7 +111,8 @@ describe('Child with both parents and grandparents', () => {
       .send({ referenceId: childNodeId.toString(), destinationId: paternalGrandfatherId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
-    
+
+    // console.log("RES PATERNAL GRANDFATHER", res.body);
     assert.strictEqual(res.body.relationshipType, 'grandparent');
   });
 

@@ -1,4 +1,5 @@
 const logger = require('./logger');
+const { InvalidObjectIdError, NotFoundError } = require('./customErrors'); 
 
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method);
@@ -13,25 +14,48 @@ const unknownEndpoint = (request, response) => {
 };
 
 const errorHandler = (error, request, response, next) => {
-  console.log("LOGGER ERROR ", error.message);
+  console.log("LOGGER ERROR:", error);
+  console.log("Error constructor:", error.constructor.name); // Check the constructor name
+  console.log(InvalidObjectIdError === error.constructor); // Should return true
 
   if (error instanceof MaxParentsError) {
-    // Handle custom MaxParentsError specifically
     return response.status(error.statusCode).json({ error: error.message });
-  } else if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' });
-  } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message });
-  } else if (error.name === 'MongoServerError' && error.message.includes('E11000 duplicate key error')) {
-    return response.status(400).json({ error: 'expected `username` to be unique' });
-  } else if (error.name === 'JsonWebTokenError') {
-    return response.status(401).json({ error: 'token invalid' });
-  } else if (error.name === 'TokenExpiredError') {
-    return response.status(401).json({ error: 'token expired' });
   }
 
-  next(error);  // Pass the error to the next middleware if not handled
+  if (InvalidObjectIdError === error.constructor|| error.constructor == NotFoundError) {
+    return response.status(error.statusCode).json({ error: error.message });
+  }
+
+  
+
+  // switch (error.name) {
+    
+  //   case 'CastError':
+  //     return response.status(400).send({ error: 'malformatted id' });
+  //   case 'ValidationError':
+  //     return response.status(400).json({ error: error.message });
+  //   case 'MongoServerError':
+  //     if (error.message.includes('E11000 duplicate key error')) {
+  //       return response.status(400).json({ error: 'expected `username` to be unique' });
+  //     }
+  //     break;
+  //   case 'JsonWebTokenError':
+  //     return response.status(401).json({ error: 'token invalid' });
+  //   case 'TokenExpiredError':
+  //     return response.status(401).json({ error: 'token expired' });
+  //   default:
+  //     if (error.statusCode) {
+  //       // Handle other custom error status codes if set
+  //       return response.status(error.statusCode).json({ error: error.message });
+  //     }
+  //     break;
+  // }
+
+  // next(error);  // Pass the error to the next middleware if not handled
 };
+
+module.exports = errorHandler;
+
 
 module.exports = {
   requestLogger,

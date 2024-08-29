@@ -24,6 +24,7 @@ treeRouter.post('/add-parent', async (req, res) => {
   }
 
   const result = await treeService.addParent(treeId, nodeId, parentId);
+  console.log("RES ", result)
   return res.status(result.status).json(result);
 });
 
