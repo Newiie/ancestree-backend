@@ -64,56 +64,53 @@ describe('Tree operations', () => {
     newGrandparentId = savedNewGrandparentNode;
   });
 
-  // test('adding a child to a specific node succeeds', async () => {
-  //   const res = await api
-  //     .post('/api/trees/add-child')
-  //     .send({ treeId: rootNodeId.toString(), nodeId: parentId.toString(), childId: childNodeId.toString() })
-  //     .expect(200)
-  //     .expect('Content-Type', /application\/json/);
-  
-  //   assert.strictEqual(res.body.message, 'Child added successfully');
+  test('adding an existing child to a specific node fails', async () => {
+    // First, add the child to the parent
+    await api
+      .post('/api/trees/add-child')
+      .send({ treeId: rootNodeId.toString(), nodeId: parentId.toString(), childId: childNodeId.toString() })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
 
-  //   const parentNode = await PersonNode.findById(parentId);
-  //   assert(parentNode.children.includes(childNodeId.toString()));
-  
-  //   const childNode = await PersonNode.findById(childNodeId);
-  //   assert(childNode.parents.includes(parentId.toString()));
-  // });
-  
-  test('adding a parent to a specific node succeeds', async () => {
+    // Now, attempt to add the same child again to the same parent node
     const res = await api
+      .post('/api/trees/add-child')
+      .send({ treeId: rootNodeId.toString(), nodeId: parentId.toString(), childId: childNodeId.toString() })
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+
+    assert.strictEqual(res.body.message, 'Child is already linked to the parent');
+
+    const parentNode = await PersonNode.findById(parentId);
+    assert(parentNode.children.includes(childNodeId.toString()));
+  
+    const childNode = await PersonNode.findById(childNodeId);
+    assert(childNode.parents.includes(parentId.toString()));
+  });
+  
+  test('adding an existing parent to a specific node fails', async () => {
+    // First, add the new parent to the child
+    await api
       .post('/api/trees/add-parent')
       .send({ treeId: rootNodeId.toString(), nodeId: parentId.toString(), parentId: newParentId.toString() })
       .expect(200)
       .expect('Content-Type', /application\/json/);
 
-    assert.strictEqual(res.body.message, 'Parent added successfully');
-    // console.log("PARENT TEST - PARENT", res.body);
+    // Now, attempt to add the same parent again to the same child node
+    const res = await api
+      .post('/api/trees/add-parent')
+      .send({ treeId: rootNodeId.toString(), nodeId: parentId.toString(), parentId: newParentId.toString() })
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+
+    assert.strictEqual(res.body.message, 'Parent is already linked to the child');
+
     const childNode = await PersonNode.findById(parentId);
-    // console.log("PARENT TEST - PARENT", childNode);
     assert(childNode.parents.includes(newParentId.toString()));
+  
     const newParentNode = await PersonNode.findById(newParentId);
-    // console.log("NEW PARENT NODE", newParentNode);
     assert(newParentNode.children.includes(parentId.toString()));
   });
-
-  // test('adding a grandparent to a specific node succeeds', async () => {
-  //   // Add new grandparent to the parent node
-  //   const res = await api
-  //     .post('/api/trees/add-parent')
-  //     .send({ treeId: rootNodeId.toString(), nodeId: newParentId.toString(), parentId: newGrandparentId.toString() })
-  //     .expect(200)
-  //     .expect('Content-Type', /application\/json/);
-
-  //   assert.strictEqual(res.body.message, 'Parent added successfully');
-
-  //   const parentNode = await PersonNode.findById(newParentId);
-  //   assert(parentNode.parents.includes(newGrandparentId.toString()));
-  //   // console.log("GP TEST - PARENT", parentNode);
-  //   const newGrandparentNode = await PersonNode.findById(newGrandparentId);
-  //   // console.log("GP TEST - GRAND PARENT", newGrandparentNode);
-  //   assert(newGrandparentNode.children.includes(newParentId.toString()));
-  // });
 
   after(async () => {
     await mongoose.connection.close();

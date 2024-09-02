@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const FamilyTree = require('../models/familyTree');
 const PersonNode = require('../models/personNode');
-const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors'); // Assuming you've placed the custom errors in a separate file
+const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors'); 
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
