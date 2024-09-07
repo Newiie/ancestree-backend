@@ -1,53 +1,31 @@
-const bcrypt = require('bcrypt')
-const usersRouter = require('express').Router()
-const User = require('../models/user')
-const Person = require('../models/person')
+// routes/usersRouter.js
+const express = require('express');
+const UserService = require('../services/UserService');
+
+const usersRouter = express.Router();
 
 // Create a new user
 usersRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body;
 
-  if (!username || !password) {
-    console.log('Validation failed: Username or password missing');
-    return response.status(400).json({ error: 'Username and password are required' });
-  }
-
   try {
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = new User({
-      username,
-      name,
-      passwordHash,
-    });
-
-    const savedUser = await user.save();
+    const savedUser = await UserService.createUser(username, name, password);
     response.status(201).json(savedUser);
   } catch (error) {
-    console.error('Error saving user:', error);
-    response.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error saving user:', error.message);
+    response.status(400).json({ error: error.message });
   }
 });
 
-// Get all users and populate notes, children, and parents
+// Get all users and populate relations
 usersRouter.get('/', async (request, response) => {
   try {
-    const users = await User.find({}).exec(); 
-    const populatedUsers = await Promise.all(users.map(async (user) => {
-      const relations = await Person.find({ relatedUser: user._id }).select('name birthdate deathdate relatedUser').lean();
-
-      return {
-        ...user.toJSON(), 
-        relations 
-      };
-    }));
-
-    response.json(populatedUsers);
+    const users = await UserService.getAllUsersWithRelations();
+    response.json(users);
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('Error fetching users:', error.message);
     response.status(500).json({ error: 'Something went wrong' });
   }
 });
 
-
-
-module.exports = usersRouter
+module.exports = usersRouter;

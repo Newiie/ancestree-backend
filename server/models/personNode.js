@@ -14,6 +14,15 @@ const personNodeSchema = new mongoose.Schema({
   children: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PersonNode' }]
 });
 
+personNodeSchema.set('toJSON', {
+  transform: function (doc, ret, options) {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  }
+});
+
 const PersonNode = mongoose.model('PersonNode', personNodeSchema);
 
 module.exports = PersonNode

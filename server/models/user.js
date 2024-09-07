@@ -1,9 +1,17 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
+  username: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  name: String,
   passwordHash: String,
-  familyTree: { type: mongoose.Schema.Types.ObjectId, ref: 'FamilyTree' }
+  familyTree: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FamilyTree'
+  }
 });
 
 userSchema.set('toJSON', {
@@ -16,6 +24,7 @@ userSchema.set('toJSON', {
   }
 });
 
-const User = mongoose.model('User', userSchema)
 
-module.exports = User
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

@@ -1,0 +1,30 @@
+
+### Add Child
+POST http://localhost:3001/api/tree/add-child
+Content-Type: application/json
+
+{
+    "treeId": "66db0ffc0a366a4c110b65fc",
+    "nodeId": "NODE_ID_HERE",
+    "childId": "CHILD_ID_HERE"
+}
+
+### Add Parent
+POST http://localhost:3001/api/tree/add-parent
+Content-Type: application/json
+
+{
+    "treeId": "TREE_ID_HERE",
+    "nodeId": "NODE_ID_HERE",
+    "parentId": "PARENT_ID_HERE"
+}
+
+### Check Relationship
+
+POST http://localhost:3001/api/tree/check-relationship
+Content-Type: application/json
+
+{
+    "referenceId": "REFERENCE_NODE_ID_HERE",
+    "destinationId": "DESTINATION_NODE_ID_HERE"
+}
