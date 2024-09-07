@@ -3,6 +3,10 @@ const express = require('express')
 require('express-async-errors')
 const app = express()
 const cors = require('cors')
+const Person = require('./models/person');
+const PersonNode = require('./models/personNode');
+const FamilyTree = require('./models/familyTree');
+const User = require('./models/user');
 
 // ROUTER REFERENCE
 const usersRouter = require('./controllers/users')
@@ -29,6 +33,19 @@ app.use(cors())
 app.use(express.static('dist'))
 app.use(express.json())
 app.use(middleware.requestLogger)
+
+// RESET
+const reset = async () => {
+  const resetFunction = async () => {
+    await User.deleteMany({});
+    await Person.deleteMany({});
+    await PersonNode.deleteMany({});
+    await FamilyTree.deleteMany({});
+  }
+  await resetFunction();
+}
+
+reset();
 
 // ROUTER
 app.use('/api/users', usersRouter)

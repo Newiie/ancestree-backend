@@ -8,31 +8,31 @@ const {jwtMiddleware} = require('../utils/middleware');
 
 // ADD CHILD ROUTE
 treeRouter.post('/add-child', async (req, res) => {
-  const { treeId, nodeId, childId } = req.body;
+  const { treeId, nodeId, childDetails } = req.body;
 
-  if (!treeId || !nodeId || !childId) {
+  if (!treeId || !nodeId || !childDetails) {
     return res.status(400).json({ message: 'Invalid request parameters' });
   }
 
-  const result = await treeService.addChild(treeId, nodeId, childId);
+  const result = await treeService.addChild(treeId, nodeId, childDetails);
   return res.status(result.status).json(result);
 });
 
 // ADD PARENT ROUTE
 treeRouter.post('/add-parent', async (req, res) => {
-  const { treeId, nodeId, parentId } = req.body;
+  const { treeId, nodeId, parentDetails } = req.body;
 
-  if (!treeId || !nodeId || !parentId) {
+  if (!treeId || !nodeId || !parentDetails) {
     return res.status(400).json({ message: 'Invalid request parameters' });
   }
 
-  const result = await treeService.addParent(treeId, nodeId, parentId);
+  const result = await treeService.addParent(treeId, nodeId, parentDetails);
   // console.log("RES ", result)
   return res.status(result.status).json(result);
 });
 
 // CHECK RELATIONSHIP ROUTE
-treeRouter.post('/check-relationship', async (req, res) => {
+treeRouter.get('/check-relationship', async (req, res) => {
   const { referenceId, destinationId } = req.body;
 
   if (!referenceId || !destinationId) {

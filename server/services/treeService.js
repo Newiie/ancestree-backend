@@ -1,8 +1,10 @@
 const treeRepository = require('../repositories/treeRepository');
+const Person = require("../models/person")
 
-const addChild = async (treeId, nodeId, childId) => {
+const addChild = async (treeId, nodeId, childDetails) => {
   try {
-    let isParentAlreadyLinked = false
+    let isParentAlreadyLinked = false;
+
     const familyTree = await treeRepository.getFamilyTreeById(treeId);
     if (!familyTree) {
       return { status: 404, message: 'Family tree not found' };
@@ -13,13 +15,24 @@ const addChild = async (treeId, nodeId, childId) => {
       return { status: 404, message: 'Parent node not found' };
     }
 
-    let childNode = await treeRepository.getPersonNodeById(childId, ['person', 'parents']);
+    // Find or create a child by name, birthdate, and deathdate
+    let childPerson = await Person.findOne(childDetails);
+    if (!childPerson) {
+      // If the person does not exist, create a new Person
+      childPerson = await Person.create(childDetails);
+    }
+
+    let childNode = await treeRepository.getPersonNodeByPersonId(childPerson._id, ['person', 'parents']);
     if (!childNode) {
       // Create a new child node if it doesn't exist
-      childNode = await treeRepository.createPersonNode({ person: childId, parents: [nodeId], children: [] });
+      childNode = await treeRepository.createPersonNode({
+        person: childPerson._id,
+        parents: [nodeId],
+        children: []
+      });
     } else {
       // Check if the child-parent relationship already exists
-       isParentAlreadyLinked = childNode.parents.some(parent => parent._id.equals(parentNode._id));
+      isParentAlreadyLinked = childNode.parents.some(parent => parent._id.equals(parentNode._id));
       if (!isParentAlreadyLinked) {
         // Add the parent to the child's parents array
         await treeRepository.addParentToNode(childNode, nodeId);
@@ -31,6 +44,33 @@ const addChild = async (treeId, nodeId, childId) => {
     if (!isChildAlreadyLinked) {
       // Add the child to the parent's children array
       await treeRepository.addChildToNode(parentNode, childNode._id);
+    }
+
+    // Check if the current parent has other children
+    if (parentNode.children.length > 0) {
+      for (const sibling of parentNode.children) {
+        const siblingNode = await treeRepository.getPersonNodeById(sibling._id, ['person', 'parents']);
+
+        // If the sibling has two parents, find the other parent
+        if (siblingNode.parents.length === 2) {
+          const otherParentNode = siblingNode.parents.find(parent => !parent._id.equals(parentNode._id));
+
+          if (otherParentNode) {
+            const isChildLinkedToOtherParent = otherParentNode.children.some(child => child._id.equals(childNode._id));
+
+            // Add the child to the other parent's children if not already present
+            if (!isChildLinkedToOtherParent) {
+              await treeRepository.addChildToNode(otherParentNode, childNode._id);
+
+              // Also ensure the child knows the other parent
+              const isChildLinkedToParent = childNode.parents.some(parent => parent._id.equals(otherParentNode._id));
+              if (!isChildLinkedToParent) {
+                await treeRepository.addParentToNode(childNode, otherParentNode._id);
+              }
+            }
+          }
+        }
+      }
     }
 
     // Return success response only if an actual addition happened
@@ -45,10 +85,10 @@ const addChild = async (treeId, nodeId, childId) => {
   }
 };
 
-
-const addParent = async (treeId, nodeId, parentId) => {
+const addParent = async (treeId, nodeId, parentDetails) => {
   try {
-    let isChildAlreadyLinked = false
+    let isChildAlreadyLinked = false;
+
     const familyTree = await treeRepository.getFamilyTreeById(treeId);
     if (!familyTree) {
       return { status: 404, message: 'Family tree not found' };
@@ -64,10 +104,20 @@ const addParent = async (treeId, nodeId, parentId) => {
       return { status: 400, message: 'Cannot add more than two parents' };
     }
 
-    let parentNode = await treeRepository.getPersonNodeById(parentId, ['person', 'children']);
+    // Find or create a parent by name, birthdate, and deathdate
+    let parentPerson = await Person.findOne(parentDetails);
+    if (!parentPerson) {
+      // If the person does not exist, create a new Person
+      parentPerson = await Person.create(parentDetails);
+    }
+
+    let parentNode = await treeRepository.getPersonNodeByPersonId(parentPerson._id, ['person', 'children']);
     if (!parentNode) {
       // Create a new parent node if it doesn't exist
-      parentNode = await treeRepository.createPersonNode({ person: parentId, children: [childNode._id] });
+      parentNode = await treeRepository.createPersonNode({
+        person: parentPerson._id,
+        children: [childNode._id]
+      });
     } else {
       // Check if the child is already linked to this parent
       isChildAlreadyLinked = parentNode.children.some(child => child._id.equals(childNode._id));
@@ -93,6 +143,7 @@ const addParent = async (treeId, nodeId, parentId) => {
     return { status: 500, message: 'Internal Server Error' };
   }
 };
+
 
 
 const checkRelationship = async (referenceId, destinationId) => {

@@ -56,9 +56,9 @@ class UserService {
         const relations = await PersonNodeRepository.getPersonNodeById(user.familyTree.root, ['parents', 'children']);
         return {
           ...user.toJSON(),
-          relations: {
-            ...relations.toJSON(), // relations.toJSON() triggers the transformation for PersonNode
-          },
+          // relations: {
+          //   ...relations.toJSON(), // relations.toJSON() triggers the transformation for PersonNode
+          // },
         };
       })
     );

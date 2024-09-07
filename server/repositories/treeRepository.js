@@ -16,16 +16,56 @@ const getFamilyTreeById = async (id) => {
   return familyTree;
 };
 
+const getPersonNodeByPersonId = async (personId, populateFields = []) => {
+  if (!isValidObjectId(personId)) {
+    throw new InvalidObjectIdError('Invalid Person ID');
+  }
+
+  // Initialize the query to find the PersonNode by person._id
+  let query = PersonNode.findOne({ person: personId });
+
+  // Apply population if any fields are provided.
+  if (populateFields.length > 0) {
+    populateFields.forEach(field => {
+      query = query.populate(field);
+    });
+  }
+
+  // Execute the query after setting up populates
+  const personNode = await query.exec();
+
+  // Check if personNode exists
+  if (!personNode) {
+    return null;
+  }
+
+  return personNode;
+};
+
+
 const getPersonNodeById = async (id, populateFields = []) => {
   if (!isValidObjectId(id)) {
     throw new InvalidObjectIdError('Invalid PersonNode ID');
   }
+
+  // Initialize the query, but don't await it yet.
   let query = PersonNode.findById(id);
-  populateFields.forEach(field => query = query.populate(field));
-  const personNode = await query.exec();
-  if (!personNode) {
-    throw new NotFoundError('PersonNode not found');
+
+  // Apply population if any fields are provided.
+  if (populateFields.length > 0) {
+    populateFields.forEach(field => {
+      query = query.populate(field);
+    });
   }
+
+  // Execute the query after setting up populates
+  const personNode = await query.exec();
+
+  // Check if personNode exists
+  if (!personNode) {
+    null
+  }
+
   return personNode;
 };
 
@@ -60,4 +100,5 @@ module.exports = {
   createPersonNode,
   addParentToNode,
   addChildToNode,
+  getPersonNodeByPersonId,
 };

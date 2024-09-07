@@ -1,30 +1,40 @@
 
 ### Add Child
-POST http://localhost:3001/api/tree/add-child
+POST http://localhost:3001/api/trees/add-child
 Content-Type: application/json
 
 {
-    "treeId": "66db0ffc0a366a4c110b65fc",
-    "nodeId": "NODE_ID_HERE",
-    "childId": "CHILD_ID_HERE"
+    "treeId": "66dc563cdd743679405e3640",
+    "nodeId": "66dc5654dd743679405e365b",
+    "childDetails": {
+        "name": "Sibling Doe",
+        "birthdate": "2000-01-01T00:00:00.000Z",
+        "deathdate": null
+    }
 }
+
 
 ### Add Parent
-POST http://localhost:3001/api/tree/add-parent
+POST http://localhost:3001/api/trees/add-parent
 Content-Type: application/json
 
 {
-    "treeId": "TREE_ID_HERE",
-    "nodeId": "NODE_ID_HERE",
-    "parentId": "PARENT_ID_HERE"
+    "treeId": "66dc563cdd743679405e3640",
+    "nodeId": "66dc563cdd743679405e363c",
+    "parentDetails": {
+        "name": "Parent 1",
+        "birthdate": "1970-05-15T00:00:00.000Z",
+        "deathdate": null
+    }
 }
+
 
 ### Check Relationship
 
-POST http://localhost:3001/api/tree/check-relationship
+GET http://localhost:3001/api/trees/check-relationship
 Content-Type: application/json
 
 {
-    "referenceId": "REFERENCE_NODE_ID_HERE",
-    "destinationId": "DESTINATION_NODE_ID_HERE"
+    "referenceId": "66dc563cdd743679405e363c",
+    "destinationId": "66dc565fdd743679405e3667"
 }
