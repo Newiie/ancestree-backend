@@ -4,7 +4,8 @@ const personSchema = new mongoose.Schema({
   name: { type: String, required: true },
   birthdate: Date,
   deathdate: Date,
-  relatedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }
+  relatedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+  treeId: { type: mongoose.Schema.Types.ObjectId, ref: 'FamilyTree', required: false} 
 });
 
 personSchema.set('toJSON', {

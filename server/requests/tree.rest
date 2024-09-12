@@ -4,11 +4,11 @@ POST http://localhost:3001/api/trees/add-child
 Content-Type: application/json
 
 {
-    "treeId": "66dc563cdd743679405e3640",
-    "nodeId": "66dc5654dd743679405e365b",
+    "treeId": "66def91364fb2114901390e9",
+    "nodeId": "66def91264fb2114901390e5",
     "childDetails": {
-        "name": "Sibling Doe",
-        "birthdate": "2000-01-01T00:00:00.000Z",
+        "name": "Parent 2 Luukkainen",
+        "birthdate": "2040-01-01T00:00:00.000Z",
         "deathdate": null
     }
 }
@@ -19,11 +19,11 @@ POST http://localhost:3001/api/trees/add-parent
 Content-Type: application/json
 
 {
-    "treeId": "66dc563cdd743679405e3640",
-    "nodeId": "66dc563cdd743679405e363c",
+    "treeId": "66def91664fb2114901390f3",
+    "nodeId": "66def91664fb2114901390ef",
     "parentDetails": {
-        "name": "Parent 1",
-        "birthdate": "1970-05-15T00:00:00.000Z",
+        "name": "Parent 2 Luukkainen",
+        "birthdate": "2040-01-01T00:00:00.000Z",
         "deathdate": null
     }
 }

@@ -14,6 +14,23 @@ class PersonRepository {
       .select('name birthdate deathdate relatedUser')
       .lean();
   }
+
+  static async findOrCreatePerson(personDetails) {
+    let person = await Person.findOne(personDetails);
+    if (!person) {
+      person = await this.createPerson(personDetails);
+    }
+    return person;
+  }
+
+  static async findSimilarPersons(personDetails) {
+    const { name, birthdate, deathdate } = personDetails;
+    return await Person.find({
+      name: { $regex: new RegExp(name, 'i') }, // Case-insensitive name match
+      birthdate: birthdate ? birthdate : { $exists: true },
+      deathdate: deathdate ? deathdate : { $exists: true }
+    }).lean();
+  }
 }
 
 module.exports = PersonRepository;

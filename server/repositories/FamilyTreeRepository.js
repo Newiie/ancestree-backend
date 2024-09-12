@@ -3,11 +3,13 @@ const mongoose = require('mongoose');
 const FamilyTree = require('../models/familyTree');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors');
 
-const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
-
 class FamilyTreeRepository {
+  static isValidObjectId(id) {
+    return mongoose.Types.ObjectId.isValid(id);
+  }
+
   static async getFamilyTreeById(id) {
-    if (!isValidObjectId(id)) {
+    if (!this.isValidObjectId(id)) {
       throw new InvalidObjectIdError('Invalid FamilyTree ID');
     }
     const familyTree = await FamilyTree.findById(id);
@@ -15,6 +17,13 @@ class FamilyTreeRepository {
       throw new NotFoundError('FamilyTree not found');
     }
     return familyTree;
+  }
+
+  static async getFamilyTreeByUserId(userId) {
+    if (!this.isValidObjectId(userId)) {
+      throw new InvalidObjectIdError('Invalid User ID');
+    }
+    return await FamilyTree.findOne({ owner: userId }); // Changed 'user' to 'owner'
   }
 
   static async createFamilyTree(data) {

@@ -16,6 +16,28 @@ const getFamilyTreeById = async (id) => {
   return familyTree;
 };
 
+const getFamilyTreeByUserId = async (userId) => {
+  if (!isValidObjectId(userId)) {
+    throw new InvalidObjectIdError('Invalid User ID');
+  }
+  const familyTree = await FamilyTree.findOne({ user: userId });
+  if (!familyTree) {
+    return null;
+  }
+  return familyTree;
+};
+
+const findPersonInTree = async (treeId, personDetails) => {
+  const { name, birthdate, deathdate } = personDetails;
+  const personNode = await PersonNode.findOne({
+    familyTree: treeId,
+    'person.name': name,
+    'person.birthdate': birthdate,
+    'person.deathdate': deathdate
+  }).populate('person');
+  return personNode ? personNode.person : null;
+};
+
 const getPersonNodeByPersonId = async (personId, populateFields = []) => {
   if (!isValidObjectId(personId)) {
     throw new InvalidObjectIdError('Invalid Person ID');
@@ -94,6 +116,14 @@ const addChildToNode = async (node, childId) => {
   }
 };
 
+const findOrCreatePerson = async (personDetails) => {
+  let person = await Person.findOne(personDetails);
+  if (!person) {
+    person = await Person.create(personDetails);
+  }
+  return person;
+};
+
 module.exports = {
   getFamilyTreeById,
   getPersonNodeById,
@@ -101,4 +131,7 @@ module.exports = {
   addParentToNode,
   addChildToNode,
   getPersonNodeByPersonId,
+  getFamilyTreeByUserId,
+  findPersonInTree,
+  findOrCreatePerson,
 };

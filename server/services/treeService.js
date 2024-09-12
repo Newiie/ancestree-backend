@@ -1,84 +1,58 @@
-const treeRepository = require('../repositories/treeRepository');
-const Person = require("../models/person")
+const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
+const PersonNodeRepository = require('../repositories/PersonNodeRepository');
+const PersonRepository = require('../repositories/PersonRepository');
+const UserRepository = require('../repositories/UserRepository');
+const Person = require('../models/person');
+
+
 
 const addChild = async (treeId, nodeId, childDetails) => {
   try {
-    let isParentAlreadyLinked = false;
-
-    const familyTree = await treeRepository.getFamilyTreeById(treeId);
+    childDetails.treeId = treeId;
+    const familyTree = await FamilyTreeRepository.getFamilyTreeById(treeId);
     if (!familyTree) {
       return { status: 404, message: 'Family tree not found' };
     }
 
-    const parentNode = await treeRepository.getPersonNodeById(nodeId, ['person', 'children', 'parents']);
+    const parentNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person', 'children', 'parents']);
     if (!parentNode) {
       return { status: 404, message: 'Parent node not found' };
     }
 
-    // Find or create a child by name, birthdate, and deathdate
-    let childPerson = await Person.findOne(childDetails);
-    if (!childPerson) {
-      // If the person does not exist, create a new Person
-      childPerson = await Person.create(childDetails);
-    }
+    let childPerson = await PersonRepository.findOrCreatePerson(childDetails);
+    let childNode = await PersonNodeRepository.getPersonNodeByPersonId(childPerson._id, ['person', 'parents']);
 
-    let childNode = await treeRepository.getPersonNodeByPersonId(childPerson._id, ['person', 'parents']);
     if (!childNode) {
-      // Create a new child node if it doesn't exist
-      childNode = await treeRepository.createPersonNode({
+      childNode = await PersonNodeRepository.createPersonNode({
         person: childPerson._id,
         parents: [nodeId],
-        children: []
+        children: [],
+        familyTree: treeId
       });
     } else {
-      // Check if the child-parent relationship already exists
-      isParentAlreadyLinked = childNode.parents.some(parent => parent._id.equals(parentNode._id));
-      if (!isParentAlreadyLinked) {
-        // Add the parent to the child's parents array
-        await treeRepository.addParentToNode(childNode, nodeId);
-      }
+      await PersonNodeRepository.addParentToNode(childNode, nodeId);
     }
 
-    // Check if the parent-child relationship already exists
-    const isChildAlreadyLinked = parentNode.children.some(child => child._id.equals(childNode._id));
-    if (!isChildAlreadyLinked) {
-      // Add the child to the parent's children array
-      await treeRepository.addChildToNode(parentNode, childNode._id);
+    await PersonNodeRepository.addChildToNode(parentNode, childNode._id);
+
+    // Handle sibling relationships
+    await handleSiblingRelationships(parentNode, childNode);
+
+    // Check for existing person across all users' trees
+    const potentialMatch = await checkForPotentialMatch(childDetails, childNode, treeId);
+    console.log("POTENTIAL MATCH", potentialMatch);
+    
+    if (potentialMatch.length > 0) {
+      return {
+        status: 200,
+        message: 'Child added successfully. Potential match found in another user\'s tree.',
+        parentNode,
+        childNode,
+        potentialMatch
+      };
     }
 
-    // Check if the current parent has other children
-    if (parentNode.children.length > 0) {
-      for (const sibling of parentNode.children) {
-        const siblingNode = await treeRepository.getPersonNodeById(sibling._id, ['person', 'parents']);
-
-        // If the sibling has two parents, find the other parent
-        if (siblingNode.parents.length === 2) {
-          const otherParentNode = siblingNode.parents.find(parent => !parent._id.equals(parentNode._id));
-
-          if (otherParentNode) {
-            const isChildLinkedToOtherParent = otherParentNode.children.some(child => child._id.equals(childNode._id));
-
-            // Add the child to the other parent's children if not already present
-            if (!isChildLinkedToOtherParent) {
-              await treeRepository.addChildToNode(otherParentNode, childNode._id);
-
-              // Also ensure the child knows the other parent
-              const isChildLinkedToParent = childNode.parents.some(parent => parent._id.equals(otherParentNode._id));
-              if (!isChildLinkedToParent) {
-                await treeRepository.addParentToNode(childNode, otherParentNode._id);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Return success response only if an actual addition happened
-    if (!isChildAlreadyLinked || !isParentAlreadyLinked) {
-      return { status: 200, message: 'Child added successfully', parentNode, childNode };
-    } else {
-      return { status: 400, message: 'Child is already linked to the parent', parentNode, childNode };
-    }
+    return { status: 200, message: 'Child added successfully', parentNode, childNode };
   } catch (error) {
     console.error('Error in addChild:', error);
     return { status: 500, message: 'Internal Server Error' };
@@ -87,57 +61,50 @@ const addChild = async (treeId, nodeId, childDetails) => {
 
 const addParent = async (treeId, nodeId, parentDetails) => {
   try {
-    let isChildAlreadyLinked = false;
-
-    const familyTree = await treeRepository.getFamilyTreeById(treeId);
+    parentDetails.treeId = treeId;
+    const familyTree = await FamilyTreeRepository.getFamilyTreeById(treeId);
     if (!familyTree) {
       return { status: 404, message: 'Family tree not found' };
     }
 
-    const childNode = await treeRepository.getPersonNodeById(nodeId, ['person', 'parents']);
+    const childNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person', 'parents']);
     if (!childNode) {
       return { status: 404, message: 'Child node not found' };
     }
 
-    // Check if the child already has two parents
     if (childNode.parents.length >= 2) {
       return { status: 400, message: 'Cannot add more than two parents' };
     }
 
-    // Find or create a parent by name, birthdate, and deathdate
-    let parentPerson = await Person.findOne(parentDetails);
-    if (!parentPerson) {
-      // If the person does not exist, create a new Person
-      parentPerson = await Person.create(parentDetails);
-    }
+    let parentPerson = await PersonRepository.findOrCreatePerson(parentDetails);
+    let parentNode = await PersonNodeRepository.getPersonNodeByPersonId(parentPerson._id, ['person', 'children']);
 
-    let parentNode = await treeRepository.getPersonNodeByPersonId(parentPerson._id, ['person', 'children']);
     if (!parentNode) {
-      // Create a new parent node if it doesn't exist
-      parentNode = await treeRepository.createPersonNode({
+      parentNode = await PersonNodeRepository.createPersonNode({
         person: parentPerson._id,
-        children: [childNode._id]
+        children: [childNode._id],
+        familyTree: treeId
       });
     } else {
-      // Check if the child is already linked to this parent
-      isChildAlreadyLinked = parentNode.children.some(child => child._id.equals(childNode._id));
-      if (!isChildAlreadyLinked) {
-        await treeRepository.addChildToNode(parentNode, childNode._id);
-      }
+      await PersonNodeRepository.addChildToNode(parentNode, childNode._id);
     }
 
-    // Check if the parent is already linked to this child
-    const isParentAlreadyLinked = childNode.parents.some(parent => parent._id.equals(parentNode._id));
-    if (!isParentAlreadyLinked) {
-      await treeRepository.addParentToNode(childNode, parentNode._id);
+    await PersonNodeRepository.addParentToNode(childNode, parentNode._id);
+
+    const potentialMatch = await checkForPotentialMatch(parentDetails, parentNode, treeId);
+    console.log("POTENTIAL MATCH", potentialMatch);
+
+    if (potentialMatch.length > 0) {
+      return {
+        status: 200,
+        message: 'Parent added successfully. Potential match found in another user\'s tree.',
+        parentNode,
+        childNode,
+        potentialMatch
+      };
     }
 
-    // Return success response only if an actual addition happened
-    if (!isChildAlreadyLinked || !isParentAlreadyLinked) {
-      return { status: 200, message: 'Parent added successfully', parentNode, childNode };
-    } else {
-      return { status: 400, message: 'Parent is already linked to the child', parentNode, childNode };
-    }
+    return { status: 200, message: 'Parent added successfully', parentNode, childNode };
   } catch (error) {
     console.error('Error in addParent:', error);
     return { status: 500, message: 'Internal Server Error' };
@@ -145,15 +112,11 @@ const addParent = async (treeId, nodeId, parentDetails) => {
 };
 
 
-
 const checkRelationship = async (referenceId, destinationId) => {
   try {
-    const referenceNode = await treeRepository.getPersonNodeById(referenceId, ['person', 'parents', 'children']);
-    const destinationNode = await treeRepository.getPersonNodeById(destinationId, ['person', 'parents', 'children']);
+    const referenceNode = await PersonNodeRepository.getPersonNodeById(referenceId, ['person', 'parents', 'children']);
+    const destinationNode = await PersonNodeRepository.getPersonNodeById(destinationId, ['person', 'parents', 'children']);
     
-
-    // console.log(referenceNode)
-    // console.log(destinationNode)
     if (!referenceNode || !destinationNode) {
       console.log("NOT FOUND BOTH NODES")
       return { status: 404, message: 'Node(s) not found' };
@@ -168,19 +131,116 @@ const checkRelationship = async (referenceId, destinationId) => {
   }
 };
 
+const handleSiblingRelationships = async (parentNode, childNode) => {
+  for (const sibling of parentNode.children) {
+    const siblingNode = await PersonNodeRepository.getPersonNodeById(sibling._id, ['person', 'parents']);
+    if (siblingNode.parents.length === 2) {
+      const otherParentNode = siblingNode.parents.find(parent => !parent._id.equals(parentNode._id));
+      if (otherParentNode) {
+        await PersonNodeRepository.addChildToNode(otherParentNode, childNode._id);
+        await PersonNodeRepository.addParentToNode(childNode, otherParentNode._id);
+      }
+    }
+  }
+};
+
+const checkForPotentialMatch = async (personDetails, newNode, userTreeId) => {
+  const allUsers = await UserRepository.getAllUsers();
+  const potentialMatches = [];
+  
+  for (const user of allUsers) {
+    const userTree = await FamilyTreeRepository.getFamilyTreeByUserId(user._id);
+    console.log("USER TREE", userTree);
+    if (userTree) {
+      const similarPersons = await findSimilarPersonInTree(userTreeId, personDetails);
+      console.log("SIMILAR PERSONS", similarPersons);
+      
+      for (const existingPerson of similarPersons) {
+        const existingNode = await PersonNodeRepository.getPersonNodeByPersonId(existingPerson._id, ['parents', 'children']);
+        const hasCommonRelatives = await checkForCommonRelatives(newNode, existingNode);
+        
+        const potentialMatch = {
+          personId: existingPerson._id,
+          treeId: existingPerson.treeId,
+          hasCommonRelatives
+        };
+
+        // Check if this person is already in potentialMatches
+        const isDuplicate = potentialMatches.some(match => 
+          match.personId.toString() === potentialMatch.personId.toString() &&
+          match.treeId.toString() === potentialMatch.treeId.toString()
+        );
+
+        if (!isDuplicate) {
+          potentialMatches.push(potentialMatch);
+        }
+      }
+    }
+  }
+  
+  return potentialMatches;
+};
+
+const findSimilarPersonInTree = async (treeId, personDetails) => {
+  const { name, birthdate, deathdate } = personDetails;
+
+  // Use a more flexible query to find similar persons
+  const similarPersons = await PersonRepository.findSimilarPersons(personDetails);
+
+  // Filter out persons that belong to the same tree
+  const filteredPersons = similarPersons.filter(person => person.treeId && person.treeId.toString() !== treeId);
+
+  console.log("SIMILAR PERSONS", filteredPersons);
+  // Return the filtered similar persons
+
+  return filteredPersons;
+};
+
+const checkForCommonRelatives = async (newNode, existingNode) => {
+  const newNodeRelatives = [...newNode.parents, ...newNode.children];
+  const existingNodeRelatives = [...existingNode.parents, ...existingNode.children];
+  console.log("NEW NODE RELATIVES", newNodeRelatives);
+  console.log("EXISTING NODE RELATIVES", existingNodeRelatives);
+  
+  // Iterate through each relative of the newNode
+  for (const newRelative of newNodeRelatives) {
+    const newRelativeNode = await PersonNodeRepository.getPersonNodeById(newRelative._id || newRelative, ['person']);
+    const newRelativePerson = newRelativeNode.person;
+
+    // Iterate through each relative of the existingNode
+    for (const existingRelative of existingNodeRelatives) {
+      const existingRelativeNode = await PersonNodeRepository.getPersonNodeById(existingRelative._id || existingRelative, ['person']);
+      const existingRelativePerson = existingRelativeNode.person;
+
+      // Compare person details (e.g., name, birthdate)
+      if (comparePersonDetails(newRelativePerson, existingRelativePerson)) {
+        return true; // Common relative found based on person details
+      }
+    }
+  }
+  
+  return false; // No common relatives found
+};
+
+// Helper function to compare person details (name, birthdate, etc.)
+const comparePersonDetails = (person1, person2) => {
+  const nameMatch = person1.name.trim().toLowerCase() === person2.name.trim().toLowerCase();
+  const birthdateMatch = person1.birthdate && person2.birthdate && new Date(person1.birthdate).getTime() === new Date(person2.birthdate).getTime();
+
+  return nameMatch && birthdateMatch;
+};
+
 const isAncestor = async (ancestorId, node, generation = 1) => {
   if (node.parents.length === 0) return false;
 
   for (const parent of node.parents) {
-    const fullParentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['parents', 'person']);
+    const fullParentNode = await PersonNodeRepository.getPersonNodeById(parent._id || parent, ['parents', 'person']);
     if (fullParentNode._id.toString() === ancestorId) return generation;
 
     const ancestorGeneration = await isAncestor(ancestorId, fullParentNode, generation + 1);
     if (ancestorGeneration) return ancestorGeneration;
   }
 };
-
-
 
 const areSiblings = (node1, node2) => {
   // Flatten and normalize parent arrays, and convert all parent IDs to strings
@@ -234,7 +294,7 @@ const findDegreeCousin = async (node1, node2) => {
 const getAncestors = async (node, generation = 0) => {
   let ancestors = [];
   for (const parent of node.parents) {
-    const fullParentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['parents', 'person']);
+    const fullParentNode = await PersonNodeRepository.getPersonNodeById(parent._id || parent, ['parents', 'person']);
     ancestors.push(fullParentNode);
     const parentAncestors = await getAncestors(fullParentNode, generation + 1);
     ancestors = ancestors.concat(parentAncestors);
@@ -244,7 +304,7 @@ const getAncestors = async (node, generation = 0) => {
 
 const findUncleAuntOrNephewNiece = async (node1, node2) => {
   for (const parent of node1.parents) {
-    const parentNode = await treeRepository.getPersonNodeById(parent._id || parent, ['children', 'parents', 'person']);
+    const parentNode = await PersonNodeRepository.getPersonNodeById(parent._id || parent, ['children', 'parents', 'person']);
     // console.log("PARENT NODE", parentNode);
     // console.log("NODE 2 NODE", node2);
 
@@ -259,8 +319,6 @@ const findUncleAuntOrNephewNiece = async (node1, node2) => {
 
   return false;
 };
-
-
 
 const isDescendant = async (descendantId, node, generation = 1, path = []) => {
   // console.log("DES ID ", descendantId.toString(), "NODE ID", node._id.toString());
@@ -283,7 +341,7 @@ const isDescendant = async (descendantId, node, generation = 1, path = []) => {
 
   // Recursively check each child
   for (const child of node.children) {
-    const fullChildNode = await treeRepository.getPersonNodeById(child._id || child, ['children', 'person']);
+    const fullChildNode = await PersonNodeRepository.getPersonNodeById(child._id || child, ['children', 'person']);
     // console.log(`Visiting child: ${fullChildNode.person.name} at generation ${generation + 1}. Current path:`, path);
 
     const descendantGeneration = await isDescendant(descendantId, fullChildNode, generation + 1, [...path]);
@@ -295,8 +353,6 @@ const isDescendant = async (descendantId, node, generation = 1, path = []) => {
   // console.log(`Backtracking from node: ${node.person.name} at generation ${generation}. Current path:`, path);
   // return false;
 };
-
-
 
 const determineRelationship = async (referenceNode, destinationNode) => {
   try {
@@ -337,5 +393,5 @@ module.exports = {
   addChild,
   addParent,
   checkRelationship,
-  determineRelationship
+  determineRelationship,
 };

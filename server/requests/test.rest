@@ -5,8 +5,8 @@ POST http://localhost:3001/api/users
 Content-Type: application/json
 
 {
-    "username": "mluukkai",
-    "name": "Matti Luukkainen",
+    "username": "luke 1",
+    "name": "luke Luukkainen",
     "password": "salainen"
 }
 

@@ -38,9 +38,9 @@ app.use(middleware.requestLogger)
 const reset = async () => {
   const resetFunction = async () => {
     await User.deleteMany({});
+    await FamilyTree.deleteMany({});
     await Person.deleteMany({});
     await PersonNode.deleteMany({});
-    await FamilyTree.deleteMany({});
   }
   await resetFunction();
 }
