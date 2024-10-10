@@ -4,10 +4,10 @@ POST http://localhost:3001/api/trees/add-child
 Content-Type: application/json
 
 {
-    "treeId": "66def91364fb2114901390e9",
-    "nodeId": "66def91264fb2114901390e5",
+    "treeId": "66f38d96d63361044b0181df",
+    "nodeId": "66f38d96d63361044b0181db",
     "childDetails": {
-        "name": "Parent 2 Luukkainen",
+        "name": "Grand Child",
         "birthdate": "2040-01-01T00:00:00.000Z",
         "deathdate": null
     }
@@ -19,10 +19,10 @@ POST http://localhost:3001/api/trees/add-parent
 Content-Type: application/json
 
 {
-    "treeId": "66def91664fb2114901390f3",
-    "nodeId": "66def91664fb2114901390ef",
+    "treeId": "66f38d96d63361044b0181df",
+    "nodeId": "66f38d96d63361044b0181db",
     "parentDetails": {
-        "name": "Parent 2 Luukkainen",
+        "name": "Grand Child",
         "birthdate": "2040-01-01T00:00:00.000Z",
         "deathdate": null
     }
@@ -35,6 +35,6 @@ GET http://localhost:3001/api/trees/check-relationship
 Content-Type: application/json
 
 {
-    "referenceId": "66dc563cdd743679405e363c",
-    "destinationId": "66dc565fdd743679405e3667"
+    "referenceId": "66e26abda048f0440e602594",
+    "destinationId": "66f38e01d63361044b018209"
 }

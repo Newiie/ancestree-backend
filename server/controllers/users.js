@@ -1,7 +1,7 @@
 // routes/usersRouter.js
 const express = require('express');
 const UserService = require('../services/UserService');
-
+const logger = require('../utils/logger');
 const usersRouter = express.Router();
 
 // Create a new user
@@ -10,9 +10,9 @@ usersRouter.post('/', async (request, response) => {
 
   try {
     const savedUser = await UserService.createUser(username, name, password);
-    response.status(201).json(savedUser);
+    response.status(201).json({ message: "Registered successfully!" });
   } catch (error) {
-    console.error('Error saving user:', error.message);
+    logger.error('Error saving user:', error.message);
     response.status(400).json({ error: error.message });
   }
 });

@@ -34,18 +34,18 @@ app.use(express.static('dist'))
 app.use(express.json())
 app.use(middleware.requestLogger)
 
-// RESET
-const reset = async () => {
-  const resetFunction = async () => {
-    await User.deleteMany({});
-    await FamilyTree.deleteMany({});
-    await Person.deleteMany({});
-    await PersonNode.deleteMany({});
-  }
-  await resetFunction();
-}
+// // RESET
+// const reset = async () => {
+//   const resetFunction = async () => {
+//     await User.deleteMany({});
+//     await FamilyTree.deleteMany({});
+//     await Person.deleteMany({});
+//     await PersonNode.deleteMany({});
+//   }
+//   await resetFunction();
+// }
 
-reset();
+// reset();
 
 // ROUTER
 app.use('/api/users', usersRouter)
