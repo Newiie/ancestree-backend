@@ -2,7 +2,7 @@
 
 # dependencies
 # Ignore all files in the "node_modules" directory inside the client and server folders
-client/node_modules/
+/node_modules/
 server/node_modules/
 /.pnp
 .pnp.js
