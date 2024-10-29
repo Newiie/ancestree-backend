@@ -1,5 +1,3 @@
-// utils/customError.js
-
 class CustomError extends Error {
   constructor(message, statusCode) {
     super(message);
@@ -11,8 +9,8 @@ class InvalidObjectIdError extends Error {
   constructor(message) {
     super(message);
     this.name = 'InvalidObjectIdError';
-    this.statusCode = 400; // Bad Request
-    Error.captureStackTrace(this, this.constructor); // Ensure the stack trace is correctly set
+    this.statusCode = 400; 
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
@@ -20,8 +18,8 @@ class NotFoundError extends Error {
   constructor(message) {
     super(message);
     this.name = 'NotFoundError';
-    this.statusCode = 404; // Not Found
-    Error.captureStackTrace(this, this.constructor); // Ensure the stack trace is correctly set
+    this.statusCode = 404; 
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 

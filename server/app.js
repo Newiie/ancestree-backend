@@ -10,7 +10,7 @@ const User = require('./models/user');
 
 // ROUTER REFERENCE
 const usersRouter = require('./controllers/users')
-const loginRouter = require('./controllers/login')
+const loginRouter = require('./controllers/auth')
 const treeRouter = require('./controllers/tree')
 
 const middleware = require('./utils/middleware')
@@ -35,15 +35,16 @@ app.use(express.json())
 app.use(middleware.requestLogger)
 
 // // RESET
-// const reset = async () => {
-//   const resetFunction = async () => {
-//     await User.deleteMany({});
-//     await FamilyTree.deleteMany({});
-//     await Person.deleteMany({});
-//     await PersonNode.deleteMany({});
-//   }
-//   await resetFunction();
-// }
+const reset = async () => {
+  const resetFunction = async () => {
+    await User.deleteMany({});
+    await FamilyTree.deleteMany({});
+    await Person.deleteMany({});
+    await PersonNode.deleteMany({});
+    console.log('reset done')
+  }
+  await resetFunction();
+}
 
 // reset();
 

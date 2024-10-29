@@ -184,15 +184,10 @@ const checkForPotentialMatch = async (personDetails, newNode, userTreeId) => {
 const findSimilarPersonInTree = async (treeId, personDetails) => {
   const { name, birthdate, deathdate } = personDetails;
 
-  // Use a more flexible query to find similar persons
   const similarPersons = await PersonRepository.findSimilarPersons(personDetails);
 
-  // Filter out persons that belong to the same tree
   const filteredPersons = similarPersons.filter(person => person.treeId && person.treeId.toString() !== treeId);
-
   console.log("SIMILAR PERSONS", filteredPersons);
-  // Return the filtered similar persons
-
   return filteredPersons;
 };
 
@@ -212,14 +207,13 @@ const checkForCommonRelatives = async (newNode, existingNode) => {
       const existingRelativeNode = await PersonNodeRepository.getPersonNodeById(existingRelative._id || existingRelative, ['person']);
       const existingRelativePerson = existingRelativeNode.person;
 
-      // Compare person details (e.g., name, birthdate)
       if (comparePersonDetails(newRelativePerson, existingRelativePerson)) {
-        return true; // Common relative found based on person details
+        return true;
       }
     }
   }
   
-  return false; // No common relatives found
+  return false; 
 };
 
 // Helper function to compare person details (name, birthdate, etc.)
@@ -243,7 +237,7 @@ const isAncestor = async (ancestorId, node, generation = 1) => {
 };
 
 const areSiblings = (node1, node2) => {
-  // Flatten and normalize parent arrays, and convert all parent IDs to strings
+
   const normalizeParents = (parents) => {
     if (!Array.isArray(parents)) return [];
     return parents.flat().map(parentId => parentId.toString());
@@ -252,7 +246,6 @@ const areSiblings = (node1, node2) => {
   const node1Parents = normalizeParents(node1.parents);
   const node2Parents = normalizeParents(node2.parents);
 
-  // Check for shared parents
   const sharedParents = node1Parents.filter(parentId => node2Parents.includes(parentId));
   
   return sharedParents.length > 0;
