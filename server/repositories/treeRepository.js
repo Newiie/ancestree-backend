@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const FamilyTree = require('../models/familyTree');
-const PersonNode = require('../models/personNode');
+const FamilyTree = require('../models/FamilyTree');
+const PersonNode = require('../models/PersonNode');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors'); 
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -65,31 +65,31 @@ const getPersonNodeByPersonId = async (personId, populateFields = []) => {
 };
 
 
-const getPersonNodeById = async (id, populateFields = []) => {
-  if (!isValidObjectId(id)) {
-    throw new InvalidObjectIdError('Invalid PersonNode ID');
-  }
+// const getPersonNodeById = async (id, populateFields = []) => {
+//   if (!isValidObjectId(id)) {
+//     throw new InvalidObjectIdError('Invalid PersonNode ID');
+//   }
 
-  // Initialize the query, but don't await it yet.
-  let query = PersonNode.findById(id);
+//   // Initialize the query, but don't await it yet.
+//   let query = PersonNode.findById(id);
 
-  // Apply population if any fields are provided.
-  if (populateFields.length > 0) {
-    populateFields.forEach(field => {
-      query = query.populate(field);
-    });
-  }
+//   // Apply population if any fields are provided.
+//   if (populateFields.length > 0) {
+//     populateFields.forEach(field => {
+//       query = query.populate(field);
+//     });
+//   }
 
-  // Execute the query after setting up populates
-  const personNode = await query.exec();
+//   // Execute the query after setting up populates
+//   const personNode = await query.exec();
 
-  // Check if personNode exists
-  if (!personNode) {
-    null
-  }
+//   // Check if personNode exists
+//   if (!personNode) {
+//     null
+//   }
 
-  return personNode;
-};
+//   return personNode;
+// };
 
 const createPersonNode = async (data) => {
   const newNode = new PersonNode(data);
@@ -126,7 +126,7 @@ const findOrCreatePerson = async (personDetails) => {
 
 module.exports = {
   getFamilyTreeById,
-  getPersonNodeById,
+  // getPersonNodeById,
   createPersonNode,
   addParentToNode,
   addChildToNode,

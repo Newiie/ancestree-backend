@@ -1,6 +1,5 @@
-// repositories/PersonNodeRepository.js
 const mongoose = require('mongoose');
-const PersonNode = require('../models/personNode');
+const PersonNode = require('../models/PersonNode');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors');
 const PersonRepository = require('./PersonRepository');
 

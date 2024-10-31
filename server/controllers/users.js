@@ -1,11 +1,11 @@
-// routes/usersRouter.js
+// routes/UsersRouter.js
 const express = require('express');
 const UserService = require('../services/UserService');
 const logger = require('../utils/logger');
-const usersRouter = express.Router();
+const UsersRouter = express.Router();
 
 // Create a new user
-usersRouter.post('/', async (request, response) => {
+UsersRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body;
 
   try {
@@ -18,7 +18,7 @@ usersRouter.post('/', async (request, response) => {
 });
 
 // Get all users and populate relations
-usersRouter.get('/', async (request, response) => {
+UsersRouter.get('/', async (request, response) => {
   try {
     const users = await UserService.getAllUsersWithRelations();
     response.json(users);
@@ -28,4 +28,4 @@ usersRouter.get('/', async (request, response) => {
   }
 });
 
-module.exports = usersRouter;
+module.exports = UsersRouter;

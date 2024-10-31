@@ -3,14 +3,14 @@ const express = require('express')
 require('express-async-errors')
 const app = express()
 const cors = require('cors')
-const Person = require('./models/person');
-const PersonNode = require('./models/personNode');
-const FamilyTree = require('./models/familyTree');
-const User = require('./models/user');
+const Person = require('./models/Person');
+const PersonNode = require('./models/PersonNode');
+const FamilyTree = require('./models/FamilyTree');
+const User = require('./models/User');
 
 // ROUTER REFERENCE
-const usersRouter = require('./controllers/users')
-const loginRouter = require('./controllers/auth')
+const usersRouter = require('./controllers/Users')
+const loginRouter = require('./controllers/Auth')
 const treeRouter = require('./controllers/tree')
 
 const middleware = require('./utils/middleware')

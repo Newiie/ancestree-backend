@@ -1,7 +1,7 @@
 const logger = require('./logger');
 const jwt = require('jsonwebtoken')
 const { InvalidObjectIdError, NotFoundError } = require('./customErrors'); 
-const User = require("../models/user")
+const User = require("../models/User")
 
 
 const requestLogger = (request, response, next) => {
@@ -13,15 +13,10 @@ const requestLogger = (request, response, next) => {
 };
 
 const jwtMiddleware = async (req, res, next) => {
-  const authorization = req.headers.authorization;
-  let token = null;
-
-  if (authorization && authorization.trim().toLowerCase().startsWith('bearer ')) {
-      token = authorization.substring(7);
-  }
+  const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
-      return res.status(401).json({ error: 'token missing' });
+    return res.status(401).json({ error: 'token missing' });
   }
 
   try {

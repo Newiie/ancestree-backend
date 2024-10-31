@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-const familyTreeSchema = new mongoose.Schema({
+const FamilyTreeSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   root: { type: mongoose.Schema.Types.ObjectId, ref: 'PersonNode' }
 });
 
-familyTreeSchema.set('toJSON', {
+FamilyTreeSchema.set('toJSON', {
   transform: function (doc, ret, options) {
     ret.treeId = ret._id;
     delete ret._id;
@@ -14,6 +14,6 @@ familyTreeSchema.set('toJSON', {
   }
 });
 
-const FamilyTree = mongoose.model('FamilyTree', familyTreeSchema);
+const FamilyTree = mongoose.model('FamilyTree', FamilyTreeSchema);
 
 module.exports = FamilyTree

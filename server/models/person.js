@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const personSchema = new mongoose.Schema({
+const PersonSchema = new mongoose.Schema({
   name: { type: String, required: true },
   birthdate: Date,
   deathdate: Date,
@@ -8,7 +8,7 @@ const personSchema = new mongoose.Schema({
   treeId: { type: mongoose.Schema.Types.ObjectId, ref: 'FamilyTree', required: false} 
 });
 
-personSchema.set('toJSON', {
+PersonSchema.set('toJSON', {
   transform: function (doc, ret, options) {
     ret.personId = ret._id;
     delete ret._id;
@@ -17,6 +17,6 @@ personSchema.set('toJSON', {
   }
 });
 
-const Person = mongoose.model('Person', personSchema);
+const Person = mongoose.model('Person', PersonSchema);
 
 module.exports = Person

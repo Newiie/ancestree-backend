@@ -1,5 +1,5 @@
 // repositories/PersonRepository.js
-const Person = require('../models/person');
+const Person = require('../models/Person');
 
 class PersonRepository {
    // Method to create a Person document

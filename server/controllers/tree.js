@@ -1,15 +1,15 @@
 const express = require('express');
-const treeService = require('../services/treeService');
-const treeRepository = require('../repositories/treeRepository'); // Ensure this is included for the check-relationship route
-const treeRouter = express.Router();
+const TreeService = require('../services/TreeService');
+const treeRepository = require('../repositories/TreeRepository'); // Ensure this is included for the check-relationship route
+const TreeRouter = express.Router();
 const {
   jwtMiddleware
 } = require('../utils/middleware');
 
-treeRouter.use(jwtMiddleware);
+TreeRouter.use(jwtMiddleware);
 
 // ADD CHILD ROUTE
-treeRouter.post('/add-child', async (req, res, next) => {
+TreeRouter.post('/add-child', async (req, res, next) => {
   try {
     const { treeId, nodeId, childDetails } = req.body;
 
@@ -17,7 +17,7 @@ treeRouter.post('/add-child', async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid request parameters' });
     }
   
-    const result = await treeService.addChild(treeId, nodeId, childDetails);
+    const result = await TreeService.addChild(treeId, nodeId, childDetails);
     return res.status(result.status).json(result);
   } catch (error) {
     next(error);
@@ -26,7 +26,7 @@ treeRouter.post('/add-child', async (req, res, next) => {
 });
 
 // ADD PARENT ROUTE
-treeRouter.post('/add-parent', async (req, res, next) => {
+TreeRouter.post('/add-parent', async (req, res, next) => {
   try {
     const { treeId, nodeId, parentDetails } = req.body;
 
@@ -34,7 +34,7 @@ treeRouter.post('/add-parent', async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid request parameters' });
     }
 
-    const result = await treeService.addParent(treeId, nodeId, parentDetails);
+    const result = await TreeService.addParent(treeId, nodeId, parentDetails);
     return res.status(result.status).json(result);
   } catch (error) {
     next(error);
@@ -42,7 +42,7 @@ treeRouter.post('/add-parent', async (req, res, next) => {
 });
 
 // CHECK RELATIONSHIP ROUTE
-treeRouter.get('/check-relationship', async (req, res, next) => {
+TreeRouter.get('/check-relationship', async (req, res, next) => {
   try {
     const { referenceId, destinationId } = req.query;
 
@@ -50,11 +50,11 @@ treeRouter.get('/check-relationship', async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid request parameters' });
     }
 
-    const result = await treeService.checkRelationship(referenceId, destinationId);
+    const result = await TreeService.checkRelationship(referenceId, destinationId);
     return res.status(result.status).json(result);
   } catch (error) {
     next(error);
   }
 });
 
-module.exports = treeRouter;
+module.exports = TreeRouter;

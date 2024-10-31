@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const personNodeSchema = new mongoose.Schema({
+const PersonNodeSchema = new mongoose.Schema({
   person: { type: mongoose.Schema.Types.ObjectId, ref: 'Person' },
   parents: {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PersonNode' }],
@@ -14,7 +14,7 @@ const personNodeSchema = new mongoose.Schema({
   children: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PersonNode' }]
 });
 
-personNodeSchema.set('toJSON', {
+PersonNodeSchema.set('toJSON', {
   transform: function (doc, ret, options) {
     ret.personNodeId = ret._id;
     delete ret._id;
@@ -23,6 +23,6 @@ personNodeSchema.set('toJSON', {
   }
 });
 
-const PersonNode = mongoose.model('PersonNode', personNodeSchema);
+const PersonNode = mongoose.model('PersonNode', PersonNodeSchema);
 
 module.exports = PersonNode
