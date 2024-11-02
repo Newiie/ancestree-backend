@@ -6,10 +6,10 @@ const UsersRouter = express.Router();
 
 // Create a new user
 UsersRouter.post('/', async (request, response) => {
-  const { username, name, password } = request.body;
+  const { firstname, lastname, username, password } = request.body;
 
   try {
-    const savedUser = await UserService.createUser(username, name, password);
+    const savedUser = await UserService.createUser(firstname, lastname, username, password);
     response.status(201).json({ message: "Registered successfully!" });
   } catch (error) {
     logger.error('Error saving user:', error.message);

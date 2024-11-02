@@ -7,16 +7,17 @@ const logger = require('../utils/logger')
 
 
 loginRouter.post('/', async (request, response) => {
-  const { username, password } = request.body
+  try {
+    const { username, password } = request.body
 
   const user = await User.findOne({ username })
-  const passwordCorrect = user === null
+    const passwordCorrect = user === null
     ? false
     : await bcrypt.compare(password, user.passwordHash)
 
   if (!(user && passwordCorrect)) {
     return response.status(400).json({
-      error: 'invalid username or password'
+      error: 'Invalid username or password'
     })
   }
 
@@ -31,10 +32,14 @@ loginRouter.post('/', async (request, response) => {
     { expiresIn: 60*60 }
   )
 
-  logger.info({ token, username: user.username, name: user.name })
+  logger.info({ token, username: user.username })
   response
-    .status(200)
-    .send({ token, username: user.username, name: user.name })
+      .status(200)
+      .send({ token, username: user.username })
+  } catch (error) {
+    console.error('Error during login:', error);
+    response.status(500).json({ error: 'Internal server error' });
+  }
 })
 
 module.exports = loginRouter

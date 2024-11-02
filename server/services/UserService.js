@@ -6,29 +6,44 @@ const PersonNodeRepository = require('../repositories/PersonNodeRepository');
 const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 
 class UserService {
-    static async createUser(username, name, password) {
+
+    static async createUser(firstname, lastname, username, password) {
         if (!username || !password) {
           throw new Error('Username and password are required');
         }
+
+        if (!firstname || !lastname) {
+          throw new Error('Firstname and Lastname are required');
+        }
+
+        const existingUser = await UserRepository.findUserByUsername(username);
+        if (existingUser) {
+          throw new Error('Username is already taken');
+        }
     
         const passwordHash = await bcrypt.hash(password, 10);
-    
-        const person = await PersonRepository.createPerson({
-          name,
-          birthdate: null,
-          deathdate: null
+        
+        console.log('firstname', firstname);
+        console.log('lastname', lastname);
+        const user = await UserRepository.createUser({
+          username,
+          passwordHash
         });
-    
+
+        const person = await PersonRepository.createPerson({
+          generalInformation: {
+            firstname,
+            lastname
+          },
+            relatedUser: user._id,
+            birthdate: null,
+            deathdate: null
+        });
+ 
         const personNode = await PersonNodeRepository.createPersonNode({
           person: person._id,
           parents: [],
           children: []
-        });
-    
-        const user = await UserRepository.createUser({
-          username,
-          name,
-          passwordHash
         });
     
         const familyTree = await FamilyTreeRepository.createFamilyTree({
@@ -37,6 +52,7 @@ class UserService {
         });
     
         user.familyTree = familyTree._id;
+        user.person = person._id;
         person.treeId = familyTree._id;
         await user.save();
         await person.save();

@@ -1,14 +1,16 @@
 ### Add Child
 POST http://localhost:3001/api/trees/add-child
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzIwYzhjZmI4NzUzMTgzMWNhOThjYzEiLCJpYXQiOjE3MzAzNTU0MDEsImV4cCI6MTczMDM1OTAwMX0.WyFXlka0GDJj7yDyT3y0fJqlHgBwg9iDes5XnpMG-D0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI2NGI3OTY5NmFlNjBiZDc4NDdiZGUiLCJpYXQiOjE3MzA1NjMwNDEsImV4cCI6MTczMDU2NjY0MX0.A-4CrkUZhc1V37490YcZ8Dh8KShbfqbV6TqbmPiDS00
+X-Tree-Id: 67264b79696ae60bd7847be4
 
 {
-    "treeId": "6720c8cfb87531831ca98cc3",
-    "nodeId": "6720c8cfb87531831ca98cbf",
-    "userId": "6720c8cfb87531831ca98cc1",
+    "nodeId": "67264b79696ae60bd7847be2",
     "childDetails": {
-        "name": "Sample Child 2",
+        "generalInformation": {
+            "firstname": "Sample",
+            "lastname": "Child 2"
+        },
         "birthdate": "2040-01-01T00:00:00.000Z",
         "deathdate": null
     }
@@ -17,12 +19,16 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZ
 ### Add Parent
 POST http://localhost:3001/api/trees/add-parent
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI2NGI3OTY5NmFlNjBiZDc4NDdiZGUiLCJpYXQiOjE3MzA1NjMwNDEsImV4cCI6MTczMDU2NjY0MX0.A-4CrkUZhc1V37490YcZ8Dh8KShbfqbV6TqbmPiDS00
+X-Tree-Id: 67264b79696ae60bd7847be4
 
 {
-    "treeId": "671b5f09854ebdced9de5d8c",
-    "nodeId": "671b5f09854ebdced9de5d88",
+    "nodeId": "67264b79696ae60bd7847be2",
     "parentDetails": {
-        "name": "Sample Child",
+        "generalInformation": {
+            "firstname": "Sample",
+            "lastname": "Parent"
+        },
         "birthdate": "2040-01-01T00:00:00.000Z",
         "deathdate": null
     }

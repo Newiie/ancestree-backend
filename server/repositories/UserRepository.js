@@ -8,6 +8,10 @@ class UserRepository {
     return await user.save();
   }
 
+  static async findUserByUsername(username) {
+    return await User.findOne({ username }).exec();
+  }
+
   static async getAllUsersWithFamilyTree() {
     return await User.find({})
       .populate({

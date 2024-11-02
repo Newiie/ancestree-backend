@@ -11,10 +11,15 @@ TreeRouter.use(jwtMiddleware);
 // ADD CHILD ROUTE
 TreeRouter.post('/add-child', async (req, res, next) => {
   try {
-    const { treeId, nodeId, childDetails } = req.body;
+    const { nodeId, childDetails } = req.body;
+    const treeId = req.headers['x-tree-id'];
 
-    if (!treeId || !nodeId || !childDetails) {
+    if (!nodeId || !childDetails) {
       return res.status(400).json({ message: 'Invalid request parameters' });
+    }
+
+    if (!treeId) {
+      return res.status(400).json({ message: 'Tree ID is required' });
     }
   
     const result = await TreeService.addChild(treeId, nodeId, childDetails);
@@ -28,10 +33,15 @@ TreeRouter.post('/add-child', async (req, res, next) => {
 // ADD PARENT ROUTE
 TreeRouter.post('/add-parent', async (req, res, next) => {
   try {
-    const { treeId, nodeId, parentDetails } = req.body;
+    const { nodeId, parentDetails } = req.body;
+    const treeId = req.headers['x-tree-id'];
 
     if (!treeId || !nodeId || !parentDetails) {
       return res.status(400).json({ message: 'Invalid request parameters' });
+    }
+
+    if (!treeId) {
+      return res.status(400).json({ message: 'Tree ID is required' });
     }
 
     const result = await TreeService.addParent(treeId, nodeId, parentDetails);

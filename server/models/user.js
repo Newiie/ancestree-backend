@@ -6,11 +6,14 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  name: String,
   passwordHash: String,
   familyTree: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'FamilyTree'
+  },
+  person: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Person'
   }
 });
 

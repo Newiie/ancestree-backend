@@ -3,17 +3,17 @@ const jwt = require('jsonwebtoken')
 const { InvalidObjectIdError, NotFoundError } = require('./customErrors'); 
 const User = require("../models/User")
 
-
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method);
   logger.info('Path:  ', request.path);
   logger.info('Body:  ', request.body);
   logger.info('---');
-  next();  // Ensure next is called
+  next(); 
 };
 
 const jwtMiddleware = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1].trim();
+  const treeId = req.headers['x-tree-id'];
 
   if (!token) {
     return res.status(401).json({ error: 'token missing' });
@@ -28,7 +28,7 @@ const jwtMiddleware = async (req, res, next) => {
           return res.status(401).json({ error: 'user not found' });
       }
 
-      if (req.body.userId && req.body.userId !== userId) {
+      if (user.familyTree.toString() !== treeId) {
         return res.status(401).json({ error: 'You are not authorized to perform this action' });
       }
       

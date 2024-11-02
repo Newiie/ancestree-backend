@@ -12,6 +12,7 @@ const User = require('./models/User');
 const usersRouter = require('./controllers/Users')
 const loginRouter = require('./controllers/Auth')
 const treeRouter = require('./controllers/tree')
+const personRouter = require('./controllers/Person')
 
 const middleware = require('./utils/middleware')
 const logger = require('./utils/logger')
@@ -52,6 +53,7 @@ const reset = async () => {
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/trees', treeRouter)
+app.use('/api/person', personRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
