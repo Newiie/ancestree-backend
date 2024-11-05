@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const FamilyTree = require('../models/FamilyTree');
 const PersonNode = require('../models/PersonNode');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors'); 
-
-const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+const { isValidObjectId } = require('../utils/helper');
+// const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const getFamilyTreeById = async (id) => {
   if (!isValidObjectId(id)) {
@@ -28,10 +28,11 @@ const getFamilyTreeByUserId = async (userId) => {
 };
 
 const findPersonInTree = async (treeId, personDetails) => {
-  const { name, birthdate, deathdate } = personDetails;
+  const { firstname, lastname, birthdate, deathdate } = personDetails;
   const personNode = await PersonNode.findOne({
     familyTree: treeId,
-    'person.name': name,
+    'person.firstname': firstname,
+    'person.lastname': lastname,
     'person.birthdate': birthdate,
     'person.deathdate': deathdate
   }).populate('person');
@@ -63,33 +64,6 @@ const getPersonNodeByPersonId = async (personId, populateFields = []) => {
 
   return personNode;
 };
-
-
-// const getPersonNodeById = async (id, populateFields = []) => {
-//   if (!isValidObjectId(id)) {
-//     throw new InvalidObjectIdError('Invalid PersonNode ID');
-//   }
-
-//   // Initialize the query, but don't await it yet.
-//   let query = PersonNode.findById(id);
-
-//   // Apply population if any fields are provided.
-//   if (populateFields.length > 0) {
-//     populateFields.forEach(field => {
-//       query = query.populate(field);
-//     });
-//   }
-
-//   // Execute the query after setting up populates
-//   const personNode = await query.exec();
-
-//   // Check if personNode exists
-//   if (!personNode) {
-//     null
-//   }
-
-//   return personNode;
-// };
 
 const createPersonNode = async (data) => {
   const newNode = new PersonNode(data);
@@ -126,7 +100,6 @@ const findOrCreatePerson = async (personDetails) => {
 
 module.exports = {
   getFamilyTreeById,
-  // getPersonNodeById,
   createPersonNode,
   addParentToNode,
   addChildToNode,

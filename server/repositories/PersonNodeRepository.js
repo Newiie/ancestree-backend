@@ -2,32 +2,56 @@ const mongoose = require('mongoose');
 const PersonNode = require('../models/PersonNode');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors');
 const PersonRepository = require('./PersonRepository');
+const Person = require('../models/Person');
 
 class PersonNodeRepository {
+  
   static isValidObjectId(id) {
     return mongoose.Types.ObjectId.isValid(id);
   }
 
   static async getPersonNodeById(id, populateFields = []) {
     if (!this.isValidObjectId(id)) {
-      throw new InvalidObjectIdError('Invalid PersonNode ID');
+        throw new InvalidObjectIdError('Invalid PersonNode ID');
     }
+    console.log("ID", id);
+    
     let query = PersonNode.findById(id);
-    populateFields.forEach(field => query = query.populate(field));
+    populateFields.forEach(field => {
+        query = query.populate(field);
+    });
+
     const personNode = await query.exec();
+
     if (!personNode) {
-      throw new NotFoundError('PersonNode not found');
+        throw new NotFoundError('PersonNode not found');
     }
+
     return personNode;
-  }
+}
+
 
   static async getPersonNodeByPersonId(personId, populateFields = []) {
     if (!this.isValidObjectId(personId)) {
       throw new InvalidObjectIdError('Invalid Person ID');
     }
-    let query = PersonNode.findOne({ person: personId });
-    populateFields.forEach(field => query = query.populate(field));
-    return await query.exec();
+    console.log("PERSON ID", personId);
+
+    // Find the PersonNode by personId
+    let personNode = await PersonNode.findOne({ 'person': personId });
+    if (!personNode) {
+      return null;
+    }
+
+    // Populate the specified fields
+    populateFields.forEach(field => {
+      personNode = personNode.populate(field);
+    });
+
+    // Execute the query
+    personNode = await personNode.execPopulate();
+
+    return personNode;
   }
 
   static async createPersonNode(data) {

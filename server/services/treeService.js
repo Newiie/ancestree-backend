@@ -2,9 +2,14 @@ const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 const PersonNodeRepository = require('../repositories/PersonNodeRepository');
 const PersonRepository = require('../repositories/PersonRepository');
 const UserRepository = require('../repositories/UserRepository');
-const Person = require('../models/Person');
 
 class TreeService {
+
+  static async getTree(userId) {
+    const familyTree = await FamilyTreeRepository.getFamilyTreeByUserId(userId);
+    return { status: 200, message: 'Family tree retrieved successfully', familyTree };
+  }
+
   static async addChild(treeId, nodeId, childDetails) {
     try {
       childDetails.treeId = treeId;
@@ -13,14 +18,20 @@ class TreeService {
         return { status: 404, message: 'Family tree not found' };
       }
 
+      // console.log("NODE ID", nodeId);
+      // console.log("FAMILY TREE", familyTree);
       const parentNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person', 'children', 'parents']);
       if (!parentNode) {
         return { status: 404, message: 'Parent node not found' };
       }
 
+      // console.log("PARENT NODE", parentNode);
+
       let childPerson = await PersonRepository.findOrCreatePerson(childDetails);
+      
       let childNode = await PersonNodeRepository.getPersonNodeByPersonId(childPerson._id, ['person', 'parents']);
 
+      // console.log("CHILD NODE", childNode);
       if (!childNode) {
         childNode = await PersonNodeRepository.createPersonNode({
           person: childPerson._id,
@@ -34,12 +45,9 @@ class TreeService {
 
       await PersonNodeRepository.addChildToNode(parentNode, childNode._id);
 
-      // Handle sibling relationships
       await this.handleSiblingRelationships(parentNode, childNode);
 
-      // Check for existing person across all users' trees
       const potentialMatch = await this.checkForPotentialMatch(childDetails, childNode, treeId);
-      console.log("POTENTIAL MATCH", potentialMatch);
       
       if (potentialMatch.length > 0) {
         return {
@@ -59,6 +67,7 @@ class TreeService {
   }
 
   static async addParent(treeId, nodeId, parentDetails) {
+
     try {
       parentDetails.treeId = treeId;
       const familyTree = await FamilyTreeRepository.getFamilyTreeById(treeId);
@@ -91,7 +100,6 @@ class TreeService {
       await PersonNodeRepository.addParentToNode(childNode, parentNode._id);
 
       const potentialMatch = await this.checkForPotentialMatch(parentDetails, parentNode, treeId);
-      console.log("POTENTIAL MATCH", potentialMatch);
 
       if (potentialMatch.length > 0) {
         return {
@@ -112,11 +120,15 @@ class TreeService {
 
   static async checkRelationship(referenceId, destinationId) {
     try {
+
+      if (!referenceId || !destinationId) {
+        return { status: 400, message: 'Invalid request parameters' };
+      }
+      
       const referenceNode = await PersonNodeRepository.getPersonNodeById(referenceId, ['person', 'parents', 'children']);
       const destinationNode = await PersonNodeRepository.getPersonNodeById(destinationId, ['person', 'parents', 'children']);
       
       if (!referenceNode || !destinationNode) {
-        console.log("NOT FOUND BOTH NODES")
         return { status: 404, message: 'Node(s) not found' };
       }
 
@@ -148,10 +160,8 @@ class TreeService {
     
     for (const user of allUsers) {
       const userTree = await FamilyTreeRepository.getFamilyTreeByUserId(user._id);
-      console.log("USER TREE", userTree);
       if (userTree) {
         const similarPersons = await this.findSimilarPersonInTree(userTreeId, personDetails);
-        console.log("SIMILAR PERSONS", similarPersons);
         
         for (const existingPerson of similarPersons) {
           const existingNode = await PersonNodeRepository.getPersonNodeByPersonId(existingPerson._id, ['parents', 'children']);
@@ -185,15 +195,12 @@ class TreeService {
     const similarPersons = await PersonRepository.findSimilarPersons(personDetails);
 
     const filteredPersons = similarPersons.filter(person => person.treeId && person.treeId.toString() !== treeId);
-    console.log("SIMILAR PERSONS", filteredPersons);
     return filteredPersons;
   }
 
   static async checkForCommonRelatives(newNode, existingNode) {
     const newNodeRelatives = [...newNode.parents, ...newNode.children];
     const existingNodeRelatives = [...existingNode.parents, ...existingNode.children];
-    console.log("NEW NODE RELATIVES", newNodeRelatives);
-    console.log("EXISTING NODE RELATIVES", existingNodeRelatives);
     
     // Iterate through each relative of the newNode
     for (const newRelative of newNodeRelatives) {

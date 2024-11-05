@@ -11,7 +11,7 @@ const User = require('./models/User');
 // ROUTER REFERENCE
 const usersRouter = require('./controllers/Users')
 const loginRouter = require('./controllers/Auth')
-const treeRouter = require('./controllers/tree')
+const treeRouter = require('./controllers/Tree')
 const personRouter = require('./controllers/Person')
 
 const middleware = require('./utils/middleware')

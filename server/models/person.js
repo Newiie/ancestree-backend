@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const PersonSchema = new mongoose.Schema({
   generalInformation: {
     firstname: { type: String, required: true },
-    middleName: String,
+    middlename: String,
     lastname: { type: String, required: true },
     suffix: String,
     email: String,
@@ -39,6 +39,15 @@ const PersonSchema = new mongoose.Schema({
     phone: String,
     relationship: String
   },
+  aboutMe: String,
+  quotes: [
+    {
+      quote: String,
+      isFavorite: Boolean
+    }
+  ],
+  profilePicture: { type: Buffer, required: false },
+  backgroundPicture: { type: Buffer, required: false },
   relatedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
   treeId: { type: mongoose.Schema.Types.ObjectId, ref: 'FamilyTree', required: false},
 });

@@ -4,12 +4,11 @@ const UserService = require('../services/UserService');
 const logger = require('../utils/logger');
 const UsersRouter = express.Router();
 
-// Create a new user
 UsersRouter.post('/', async (request, response) => {
   const { firstname, lastname, username, password } = request.body;
 
   try {
-    const savedUser = await UserService.createUser(firstname, lastname, username, password);
+    await UserService.createUser(firstname, lastname, username, password);
     response.status(201).json({ message: "Registered successfully!" });
   } catch (error) {
     logger.error('Error saving user:', error.message);
@@ -17,7 +16,6 @@ UsersRouter.post('/', async (request, response) => {
   }
 });
 
-// Get all users and populate relations
 UsersRouter.get('/', async (request, response) => {
   try {
     const users = await UserService.getAllUsersWithRelations();

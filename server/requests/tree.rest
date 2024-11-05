@@ -1,11 +1,11 @@
 ### Add Child
 POST http://localhost:3001/api/trees/add-child
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI2NGI3OTY5NmFlNjBiZDc4NDdiZGUiLCJpYXQiOjE3MzA1NjMwNDEsImV4cCI6MTczMDU2NjY0MX0.A-4CrkUZhc1V37490YcZ8Dh8KShbfqbV6TqbmPiDS00
-X-Tree-Id: 67264b79696ae60bd7847be4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI4ZmY3NGRiZDM1MjFlNjEyNWM2MTYiLCJpYXQiOjE3MzA3NDAwODcsImV4cCI6MTczMDc0MzY4N30.OxxAwEOhyvCfJOD7-WN11Rq4qd_nQcDjZK8BHfsjTpo
+X-Tree-Id: 6728ff74dbd3521e6125c61c
 
 {
-    "nodeId": "67264b79696ae60bd7847be2",
+    "nodeId": "6728ff74dbd3521e6125c61a",
     "childDetails": {
         "generalInformation": {
             "firstname": "Sample",
@@ -34,13 +34,13 @@ X-Tree-Id: 67264b79696ae60bd7847be4
     }
 }
 
-
 ### Check Relationship
-
 GET http://localhost:3001/api/trees/check-relationship
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI2NGI3OTY5NmFlNjBiZDc4NDdiZGUiLCJpYXQiOjE3MzA1OTkyNTIsImV4cCI6MTczMDYwMjg1Mn0.LhTV7SqoYf2zVG8h56Jt06-BnkwZRJXdX7XerzZ9hc8
+X-Tree-Id: 67264b79696ae60bd7847be4
 
 {
-    "referenceId": "66e26abda048f0440e602594",
-    "destinationId": "66f38e01d63361044b018209"
+    "referenceId": "67264b79696ae60bd7847be2",
+    "destinationId": "67264ee5f00892aa2bf642e6"
 }

@@ -32,10 +32,10 @@ loginRouter.post('/', async (request, response) => {
     { expiresIn: 60*60 }
   )
 
-  logger.info({ token, username: user.username })
+  logger.info({ token, username: user.username, id: user._id })
   response
       .status(200)
-      .send({ token, username: user.username })
+      .send({ token, username: user.username, id: user._id })
   } catch (error) {
     console.error('Error during login:', error);
     response.status(500).json({ error: 'Internal server error' });

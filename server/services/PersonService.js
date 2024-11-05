@@ -1,28 +1,54 @@
 const PersonRepository = require('../repositories/PersonRepository');
+const UserRepository = require('../repositories/UserRepository');
+
+const { isValidObjectId } = require('../utils/helper');
 
 class PersonService {
-    static async getPersonById(personId) {
-        return await PersonRepository.getPersonById(personId);
+    static async getPersonByUserId(userId) {
+        if (!userId) {
+            throw new Error('User ID is required');
+        }
+
+        if (!isValidObjectId(userId)) {
+            throw new Error('Invalid User ID');
+        }
+
+        const user = await UserRepository.findUserById(userId);
+        const person = await PersonRepository.getPersonById(user.person._id);
+
+        const { treeId, personId, ...filteredPerson } = person.toJSON();
+        return { ...filteredPerson, userId: user._id };
     }
 
-    static async updatePersonGeneralInformation(personId, generalInfo) {
-        return await PersonRepository.updatePersonGeneralInformation(personId, generalInfo);
+    static async updatePerson(personId, update) {
+        if (!isValidObjectId(personId)) {
+            throw new Error('Invalid Person ID');
+        }
+
+        await PersonRepository.updatePerson(personId, update);
+        const person = await PersonRepository.getPersonById(personId);
+        console.log("UPDATED PERSON",person);
+        return { status: 200, message: "Person updated successfully" };
     }
 
-    static async updateAddress(personId, addressData) {
-        return await PersonRepository.updateAddress(personId, addressData);
+    static async updateProfilePicture(userId, profilePicture) {
+        if (!isValidObjectId(userId)) {
+            throw new Error('Invalid User ID');
+        }
+
+        const user = await UserRepository.findUserById(userId);
+
+        const person = await PersonRepository.updateProfilePicture(user.person._id, profilePicture);
+        return person;
     }
 
-    static async updateVitalInformation(personId, vitalInfo) {
-        return await PersonRepository.updateVitalInformation(personId, vitalInfo);
-    }
-
-    static async updateInterests(personId, interestsData) {
-        return await PersonRepository.updateInterests(personId, interestsData);
-    }
-
-    static async updateEmergencyContact(personId, emergencyContactData) {
-        return await PersonRepository.updateEmergencyContact(personId, emergencyContactData);
+    static async updateBackgroundPicture(userId, backgroundPicture) {
+        if (!isValidObjectId(userId)) {
+            throw new Error('Invalid User ID');
+        }
+        const user = await UserRepository.findUserById(userId);
+        const person = await PersonRepository.updateBackgroundPicture(user.person._id, backgroundPicture);
+        return person;
     }
 }
 

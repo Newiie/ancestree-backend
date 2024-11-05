@@ -35,11 +35,17 @@ class PersonRepository {
     return await Person.findById(personId);
   }
 
+  static async updatePerson(personId, update) {
+    return await Person.findByIdAndUpdate(personId, { $set: update }, { new: true });
+  }
+
   static async updatePersonGeneralInformation(personId, generalInfo) {
+    console.log("GENERAL INFO", generalInfo)
     const update = Object.keys(generalInfo).reduce((acc, key) => {
         acc[`generalInformation.${key}`] = generalInfo[key];
         return acc;
     }, {});
+    console.log("UPDATE", update)
     return await Person.findByIdAndUpdate(personId, { $set: update }, { new: true });
   }
 
@@ -69,6 +75,14 @@ class PersonRepository {
         return acc;
     }, {});
     return await Person.findByIdAndUpdate(personId, { $set: update }, { new: true });
+  }
+
+  static async updateProfilePicture(personId, profilePicture) {
+    return await Person.findByIdAndUpdate(personId, { $set: { profilePicture: profilePicture } }, { new: true });
+  }
+
+  static async updateBackgroundPicture(personId, backgroundPicture) {
+    return await Person.findByIdAndUpdate(personId, { $set: { backgroundPicture: backgroundPicture } }, { new: true });
   }
 }
 

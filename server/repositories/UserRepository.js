@@ -12,6 +12,10 @@ class UserRepository {
     return await User.findOne({ username }).exec();
   }
 
+  static async findUserById(userId) {
+    return await User.findById(userId).exec();
+  }
+
   static async getAllUsersWithFamilyTree() {
     return await User.find({})
       .populate({

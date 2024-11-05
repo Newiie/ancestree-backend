@@ -1,0 +1,65 @@
+
+### GET PERSON
+GET http://localhost:3001/api/person/6728ff74dbd3521e6125c616
+
+
+### PUT PERSON
+PUT http://localhost:3001/api/person/6728ff74dbd3521e6125c616
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI4ZmY3NGRiZDM1MjFlNjEyNWM2MTYiLCJpYXQiOjE3MzA3NDAwODcsImV4cCI6MTczMDc0MzY4N30.OxxAwEOhyvCfJOD7-WN11Rq4qd_nQcDjZK8BHfsjTpo
+
+{
+    "generalInformation": {
+        "firstname": "Sample 2",
+        "middlename": "Sample",
+        "lastname": "Person",
+        "email": "sample@person.com",
+        "phone": "1234567890",
+        "birthdate": "1990-02-01",
+        "deathdate": null,
+        "birthPlace": "Anytown",
+        "birthingCenter": "Anyhospital",
+        "nationality": "Anycountry",
+        "civilStatus": "Single"
+    },
+    "address": {
+        "streetAddress": "123 Main St",
+        "city": "Anytown",
+        "province": "Anyprovince",
+        "country": "Anycountry",
+        "zipCode": "0000"
+    },
+    "vitalInformation": {
+        "sex": "Male",
+        "height": "5'10\"",
+        "weight": "180 lbs"
+    },
+    "interests": [
+        {
+            "title": "Sample Interest",
+            "description": "Sample Description"
+        },
+        {
+            "title": "Sample Interest 2",   
+            "description": "Sample Description 2"
+        }
+    ],
+    "emergencyContact": {
+        "name": "Sample Emergency Contact",
+        "phone": "1234567890",
+        "relationship": "Friend"
+    },
+    "aboutMe": "Sample About Me",
+    "quotes": [
+        {
+            "quote": "Sample Quote",
+            "isFavorite": false
+        },
+        {
+            "quote": "Favorite Quote",
+            "isFavorite": true
+        }
+    ]
+}
+
+

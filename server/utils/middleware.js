@@ -39,6 +39,33 @@ const jwtMiddleware = async (req, res, next) => {
   }
 };
 
+const profileJwtMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1].trim();
+  const userId = req.params.userId || req.body.userId;
+
+  if (!token) {
+    return res.status(401).json({ error: 'token missing' });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, process.env.SECRET);
+    const tokenUserId = decodedToken.id;
+
+    if (tokenUserId !== userId) {
+      return res.status(401).json({ error: 'You are not authorized to access this profile' });
+    }
+
+    req.user = await User.findById(tokenUserId);
+    if (!req.user) {
+      return res.status(401).json({ error: 'user not found' });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'token missing or invalid' });
+  }
+};
+
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' });
 };
@@ -86,5 +113,6 @@ module.exports = {
   requestLogger,
   unknownEndpoint,
   errorHandler,
-  jwtMiddleware
+  jwtMiddleware,
+  profileJwtMiddleware
 };
