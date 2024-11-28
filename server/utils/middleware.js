@@ -3,6 +3,13 @@ const jwt = require('jsonwebtoken')
 const { InvalidObjectIdError, NotFoundError } = require('./customErrors'); 
 const User = require("../models/User")
 
+/**
+ * Logger middleware that logs the request method, path, and body.
+ *
+ * @param {Object} request - The request object.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ */
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method);
   logger.info('Path:  ', request.path);

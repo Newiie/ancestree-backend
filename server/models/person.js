@@ -46,11 +46,12 @@ const PersonSchema = new mongoose.Schema({
       isFavorite: Boolean
     }
   ],
-  profilePicture: { type: Buffer, required: false },
-  backgroundPicture: { type: Buffer, required: false },
+  profilePicture: {type: String, required: false},
+  backgroundPicture: { type: String, required: false },
   relatedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
   treeId: { type: mongoose.Schema.Types.ObjectId, ref: 'FamilyTree', required: false},
 });
+
 
 
 PersonSchema.set('toJSON', {

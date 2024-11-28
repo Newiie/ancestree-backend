@@ -23,7 +23,22 @@ class FamilyTreeRepository {
     if (!this.isValidObjectId(userId)) {
       throw new InvalidObjectIdError('Invalid User ID');
     }
-    return await FamilyTree.findOne({ owner: userId }); 
+    return await FamilyTree.findOne({ owner: userId })
+      .populate({
+        path: 'root',
+        populate: [
+          {
+            path: 'children',
+            populate: [
+              { path: 'children' },
+              { path: 'parents' },
+              { path: 'person' },
+            ],
+          },
+          { path: 'parents' },
+          { path: 'person' },
+        ],
+      });
   }
 
   static async createFamilyTree(data) {

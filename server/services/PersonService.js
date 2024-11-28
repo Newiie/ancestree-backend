@@ -1,5 +1,7 @@
 const PersonRepository = require('../repositories/PersonRepository');
 const UserRepository = require('../repositories/UserRepository');
+const { uploadToS3, getUrlImage } = require('../utils/aws.js');
+
 
 const { isValidObjectId } = require('../utils/helper');
 
@@ -31,14 +33,17 @@ class PersonService {
         return { status: 200, message: "Person updated successfully" };
     }
 
-    static async updateProfilePicture(userId, profilePicture) {
+    static async updateProfilePicture(userId, file) {
         if (!isValidObjectId(userId)) {
             throw new Error('Invalid User ID');
         }
 
         const user = await UserRepository.findUserById(userId);
 
-        const person = await PersonRepository.updateProfilePicture(user.person._id, profilePicture);
+        await uploadToS3(file, "profilePicture", user.username);
+        const imageUrl = await getUrlImage(`${user.username}-profilePicture`);
+        const person = await PersonRepository.updateProfilePicture(user.person._id, imageUrl);
+
         return person;
     }
 
@@ -47,7 +52,11 @@ class PersonService {
             throw new Error('Invalid User ID');
         }
         const user = await UserRepository.findUserById(userId);
-        const person = await PersonRepository.updateBackgroundPicture(user.person._id, backgroundPicture);
+
+        await uploadToS3(backgroundPicture, "backgroundPicture", user.username);
+        const imageUrl = await getUrlImage(`${user.username}-backgroundPicture`);
+
+        const person = await PersonRepository.updateBackgroundPicture(user.person._id, imageUrl);
         return person;
     }
 }

@@ -47,16 +47,11 @@ PersonRouter.post('/:userId/profile-picture', profileJwtMiddleware, upload.singl
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        let profilePicture = req.file.buffer;
-
-        if (req.file.mimetype.startsWith('image/')) {
-            profilePicture = req.file.buffer;
-        } else {
+        if (!req.file.mimetype.startsWith('image/')) {
             return res.status(400).json({ message: 'Invalid file type' });
         }
-        
-        const person = await PersonService.updateProfilePicture(userId, profilePicture);
 
+        const person = await PersonService.updateProfilePicture(userId, req.file);
         res.status(200).json(person);
     } catch (error) {
         next(error);
@@ -71,16 +66,11 @@ PersonRouter.post('/:userId/background-picture', profileJwtMiddleware, upload.si
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        let backgroundPicture = req.file.buffer;
-
-        if (req.file.mimetype.startsWith('image/')) {
-            backgroundPicture = req.file.buffer;
-        } else {
+        if (!req.file.mimetype.startsWith('image/')) {
             return res.status(400).json({ message: 'Invalid file type' });
         }
 
-        console.log("BACKGROUND PICTURE", backgroundPicture)
-        const person = await PersonService.updateBackgroundPicture(userId, backgroundPicture);
+        const person = await PersonService.updateBackgroundPicture(userId, req.file);
         res.status(200).json(person);
     } catch (error) {
         next(error);
