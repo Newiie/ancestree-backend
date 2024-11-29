@@ -1,11 +1,11 @@
 ### Add Child
 POST http://localhost:3001/api/trees/add-child
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI4ZmY3NGRiZDM1MjFlNjEyNWM2MTYiLCJpYXQiOjE3MzA3NDAwODcsImV4cCI6MTczMDc0MzY4N30.OxxAwEOhyvCfJOD7-WN11Rq4qd_nQcDjZK8BHfsjTpo
-X-Tree-Id: 6728ff74dbd3521e6125c61c
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzQ5NDkzNDY2OWY1ZDEzMDI4ZjJkMTciLCJpYXQiOjE3MzI4NTYxMTcsImV4cCI6MTczMjg1OTcxN30.oJE1L6hFwh5IoUHD2fHcZapP22m3jssn-bB5YrZIO4k 
+X-Tree-Id: 67494934669f5d13028f2d1d
 
 {
-    "nodeId": "6728ff74dbd3521e6125c61a",
+    "nodeId": "67494934669f5d13028f2d1b",
     "childDetails": {
         "generalInformation": {
             "firstname": "Sample",
@@ -48,7 +48,7 @@ X-Tree-Id: 67264b79696ae60bd7847be4
 
 
 ### GET TREE   
-GET http://localhost:3001/api/trees/family-tree/6728ff74dbd3521e6125c616
+GET http://localhost:3001/api/trees/family-tree/67494934669f5d13028f2d17
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI2NGI3OTY5NmFlNjBiZDc4NDdiZGUiLCJpYXQiOjE3MzA1OTkyNTIsImV4cCI6MTczMDYwMjg1Mn0.LhTV7SqoYf2zVG8h56Jt06-BnkwZRJXdX7XerzZ9hc8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI2NGI3OTY5NmFlNjBiZDc4NDdiZGUiLCJpYXQiOjE3MzA1NjMwNDEsImV4cCI6MTczMDU2NjY0MX0.A-4CrkUZhc1V37490YcZ8Dh8KShbfqbV6TqbmPiDS00
 

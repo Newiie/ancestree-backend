@@ -23,22 +23,39 @@ class FamilyTreeRepository {
     if (!this.isValidObjectId(userId)) {
       throw new InvalidObjectIdError('Invalid User ID');
     }
-    return await FamilyTree.findOne({ owner: userId })
-      .populate({
-        path: 'root',
-        populate: [
-          {
-            path: 'children',
-            populate: [
-              { path: 'children' },
-              { path: 'parents' },
-              { path: 'person' },
-            ],
-          },
-          { path: 'parents' },
-          { path: 'person' },
-        ],
-      });
+  
+    // Reusable population config for 'person'
+    const personPopulation = {
+      path: 'person',
+      select: '-address -interests -vitalInformation -emergencyContact -aboutMe -quotes',
+    };
+  
+    // Recursive population config for 'children' and 'parents'
+    const populateRelations = (depth = 3) => {
+      if (depth === 0) return [];
+      return [
+        {
+          path: 'children',
+          populate: [
+            ...populateRelations(depth - 1), // Recursively populate children
+            personPopulation, // Populate 'person'
+          ],
+        },
+        {
+          path: 'parents',
+          populate: [
+            ...populateRelations(depth - 1), // Recursively populate parents
+            personPopulation, // Populate 'person'
+          ],
+        },
+        personPopulation, // Populate 'person' at this level
+      ];
+    };
+  
+    return await FamilyTree.findOne({ owner: userId }).populate({
+      path: 'root',
+      populate: populateRelations(3), // Adjust depth as needed
+    });
   }
 
   static async createFamilyTree(data) {
