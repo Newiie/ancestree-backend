@@ -10,6 +10,63 @@ class PersonNodeRepository {
     return mongoose.Types.ObjectId.isValid(id);
   }
 
+  static async updatePersonNode(id, data) {
+    if (!this.isValidObjectId(id)) {
+      throw new InvalidObjectIdError('Invalid PersonNode ID');
+    }
+  
+    // Find the PersonNode to get the associated Person ID
+    const personNode = await PersonNode.findById(id);
+    if (!personNode) {
+      throw new NotFoundError('PersonNode not found');
+    }
+  
+    // Assuming personNode has a reference to Person as 'person'
+    const personId = personNode.person;
+    if (!personId) {
+      throw new NotFoundError('Person not associated with this node');
+    }
+  
+    // Update the Person document
+    const updatedPerson = await PersonRepository.findPersonAndUpdate(personId, data);
+    console.log("UPDATED PERSON", updatedPerson);
+    if (!updatedPerson) {
+      throw new NotFoundError('Person not found');
+    }
+  
+    return updatedPerson;
+  }
+
+  static async deletePersonNode(id) {
+    if (!this.isValidObjectId(id)) {
+      throw new InvalidObjectIdError('Invalid PersonNode ID');
+    }
+  
+    // Find the node to be deleted
+    const personNode = await PersonNode.findById(id);
+    if (!personNode) {
+      throw new NotFoundError('PersonNode not found');
+    }
+  
+    // Recursive function to delete a node and its children
+    const deleteNodeAndChildren = async (nodeId) => {
+      const node = await PersonNode.findById(nodeId);
+      if (node) {
+        // Delete all children of the current node
+        for (const childId of node.children) {
+          await deleteNodeAndChildren(childId);
+        }
+        // Delete the current node
+        await PersonNode.findByIdAndDelete(nodeId);
+      }
+    };
+  
+    // Start the deletion process with the root node
+    await deleteNodeAndChildren(id);
+  
+    return personNode;
+  }
+
   static async getPersonNodeById(id, populateFields = []) {
     if (!this.isValidObjectId(id)) {
         throw new InvalidObjectIdError('Invalid PersonNode ID');

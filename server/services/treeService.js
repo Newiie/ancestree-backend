@@ -10,6 +10,25 @@ class TreeService {
     return { status: 200, message: 'Family tree retrieved successfully', familyTree };
   }
 
+  static async updateNode(nodeId, updatedDetails) {
+    try {
+      
+      const updatedNode = await PersonNodeRepository.updatePersonNode(nodeId, updatedDetails);  
+      return { status: 200, message: 'Node updated successfully', updatedNode };
+    } catch (error) {
+      console.error('Error in updateNode:', error); 
+    }
+  }
+
+  static async deleteNode(nodeId) {
+    try {
+      const deletedNode = await PersonNodeRepository.deletePersonNode(nodeId);
+      return { status: 200, message: 'Node deleted successfully', deletedNode };
+    } catch (error) {
+      console.error('Error in deleteNode:', error); 
+    }
+  }
+
   static async addChild(treeId, nodeId, childDetails) {
     try {
       childDetails.treeId = treeId;
@@ -26,9 +45,7 @@ class TreeService {
       }
 
       // console.log("PARENT NODE", parentNode);
-
       let childPerson = await PersonRepository.findOrCreatePerson(childDetails);
-      
       let childNode = await PersonNodeRepository.getPersonNodeByPersonId(childPerson._id, ['person', 'parents']);
 
       // console.log("CHILD NODE", childNode);

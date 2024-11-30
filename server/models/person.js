@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const PersonSchema = new mongoose.Schema({
   generalInformation: {
-    firstname: { type: String, required: true },
-    middlename: String,
-    lastname: { type: String, required: true },
+    firstName: { type: String, required: true },
+    middleName: String,
+    lastName: { type: String, required: true },
     suffix: String,
     email: String,
     phone: String,
@@ -12,8 +12,11 @@ const PersonSchema = new mongoose.Schema({
     deathdate: Date,
     birthPlace: String,
     birthingCenter: String,
-    nationality: String,
-    civilStatus: String
+    nationality: {
+      type: [String]
+    },
+    civilStatus: String,
+ 
   },
   address: {
     streetAddress: String,

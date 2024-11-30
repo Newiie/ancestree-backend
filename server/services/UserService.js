@@ -7,13 +7,15 @@ const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 
 class UserService {
 
-    static async createUser(firstname, lastname, username, password) {
+    static async createUser(firstName, lastName, username, password) {
         if (!username || !password) {
           throw new Error('Username and password are required');
         }
 
-        if (!firstname || !lastname) {
-          throw new Error('Firstname and Lastname are required');
+        if (!firstName || !lastName) {
+          console.log("FIRST NAME", firstName); 
+          console.log("LAST NAME", lastName);
+          throw new Error('firstname and lastname are required');
         }
 
         const existingUser = await UserRepository.findUserByUsername(username);
@@ -23,8 +25,8 @@ class UserService {
     
         const passwordHash = await bcrypt.hash(password, 10);
         
-        console.log('firstname', firstname);
-        console.log('lastname', lastname);
+        console.log('firstName', firstName);
+        console.log('lastName', lastName);
         const user = await UserRepository.createUser({
           username,
           passwordHash
@@ -32,8 +34,8 @@ class UserService {
 
         const person = await PersonRepository.createPerson({
           generalInformation: {
-            firstname,
-            lastname
+            firstName,
+            lastName
           },
             relatedUser: user._id,
             birthdate: null,
@@ -43,17 +45,20 @@ class UserService {
         const personNode = await PersonNodeRepository.createPersonNode({
           person: person._id,
           parents: [],
-          children: []
+          children: [],
         });
     
         const familyTree = await FamilyTreeRepository.createFamilyTree({
           root: personNode._id,
           owner: user._id
         });
-    
+
+      
+        personNode.familyTree = familyTree._id;
         user.familyTree = familyTree._id;
         user.person = person._id;
         person.treeId = familyTree._id;
+        await personNode.save();
         await user.save();
         await person.save();
     

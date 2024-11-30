@@ -5,29 +5,47 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZ
 X-Tree-Id: 67494934669f5d13028f2d1d
 
 {
-    "nodeId": "67494934669f5d13028f2d1b",
+    "nodeId": "67494959669f5d13028f2d2e",
     "childDetails": {
         "generalInformation": {
-            "firstname": "Sample",
-            "lastname": "Child 2"
+            "firstName": "Another Child",
+            "lastName": "Child 2"
         },
         "birthdate": "2040-01-01T00:00:00.000Z",
         "deathdate": null
     }
 }
 
+### Edit Node
+PATCH http://localhost:3001/api/trees/update-node/674980a08b79e24e318a66b5
+Content-Type: application/json
+
+{
+    "generalInformation": {
+        "firstName": "Updated",
+        "lastName": "Person",
+        "birthdate": "2040-01-01T00:00:00.000Z"
+    }
+}
+
+### Delete Node
+DELETE http://localhost:3001/api/trees/delete-node/674981418b79e24e318a66d6
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzQ5NDkzNDY2OWY1ZDEzMDI4ZjJkMTciLCJpYXQiOjE3MzI4NjAwMTksImV4cCI6MTczMjg2MzYxOX0.yS5P1bjX_7hBRkS4sip5_TosZMXfxtz0sE3cm-CUd8g 
+
+
 ### Add Parent
 POST http://localhost:3001/api/trees/add-parent
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI2NGI3OTY5NmFlNjBiZDc4NDdiZGUiLCJpYXQiOjE3MzA1NjMwNDEsImV4cCI6MTczMDU2NjY0MX0.A-4CrkUZhc1V37490YcZ8Dh8KShbfqbV6TqbmPiDS00
-X-Tree-Id: 67264b79696ae60bd7847be4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzQ5NDkzNDY2OWY1ZDEzMDI4ZjJkMTciLCJpYXQiOjE3MzI4NjAwMTksImV4cCI6MTczMjg2MzYxOX0.yS5P1bjX_7hBRkS4sip5_TosZMXfxtz0sE3cm-CUd8g 
+X-Tree-Id: 67494934669f5d13028f2d1d
 
 {
-    "nodeId": "67264b79696ae60bd7847be2",
+    "nodeId": "67494934669f5d13028f2d1b",
     "parentDetails": {
         "generalInformation": {
-            "firstname": "Sample",
-            "lastname": "Parent"
+            "fistName": "Sample",
+            "lastName": "Parent"
         },
         "birthdate": "2040-01-01T00:00:00.000Z",
         "deathdate": null
@@ -50,5 +68,4 @@ X-Tree-Id: 67264b79696ae60bd7847be4
 ### GET TREE   
 GET http://localhost:3001/api/trees/family-tree/67494934669f5d13028f2d17
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzI2NGI3OTY5NmFlNjBiZDc4NDdiZGUiLCJpYXQiOjE3MzA1NjMwNDEsImV4cCI6MTczMDU2NjY0MX0.A-4CrkUZhc1V37490YcZ8Dh8KShbfqbV6TqbmPiDS00
 

@@ -6,6 +6,17 @@ const { uploadToS3, getUrlImage } = require('../utils/aws.js');
 const { isValidObjectId } = require('../utils/helper');
 
 class PersonService {
+
+    static async findPersons(personDetails) {
+        try{
+            console.log("PERSON DETAILS SERVICE", personDetails)
+            const person = await PersonRepository.findPersonRelationship(personDetails);
+            return person;
+        } catch (error) {
+            console.error("Error ", error);
+        }
+    }
+
     static async getPersonByUserId(userId) {
         if (!userId) {
             throw new Error('User ID is required');
@@ -26,7 +37,7 @@ class PersonService {
         if (!isValidObjectId(personId)) {
             throw new Error('Invalid Person ID');
         }
-
+        console.log("PERSON ID", personId);
         await PersonRepository.updatePerson(personId, update);
         const person = await PersonRepository.getPersonById(personId);
         console.log("UPDATED PERSON",person);

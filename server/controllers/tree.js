@@ -42,6 +42,31 @@ TreeRouter.post('/add-child', async (req, res, next) => {
 
 });
 
+// UPDATE Person
+TreeRouter.patch('/update-node/:nodeId', async (req, res, next) => {
+  try {
+    const { nodeId } = req.params;
+    const { body } = req;
+    console.log("NODE ID", nodeId);
+    const result = await TreeService.updateNode(nodeId, body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE Person
+TreeRouter.delete('/delete-node/:nodeId', async (req, res, next) => {
+  try {
+    const { nodeId } = req.params;
+    console.log("NODE ID", nodeId);
+    const result = await TreeService.deleteNode(nodeId);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // ADD PARENT ROUTE
 TreeRouter.post('/add-parent', async (req, res, next) => {
   try {

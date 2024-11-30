@@ -1,5 +1,7 @@
 // repositories/PersonRepository.js
 const Person = require('../models/Person');
+const PersonNode = require('../models/PersonNode');
+const UserRepository = require('./UserRepository');
 
 class PersonRepository {
    // Method to create a Person document
@@ -8,10 +10,52 @@ class PersonRepository {
     return await person.save();
   }
 
+  static async findPersonRelationship(personDetails) {
+    console.log("FIND SIMLAR PERSONS ", personDetails);
+    const { firstName, middleName, lastName, birthdate } = personDetails;
+    // Construct the query object
+    const query = {
+      'generalInformation.firstName': firstName,
+      'generalInformation.lastName': lastName,
+    };
+  
+    if (middleName) query['generalInformation.middleName'] = middleName;
+    if (birthdate) query['generalInformation.birthdate'] = birthdate;
+  
+    // Execute the query to find all matching Persons
+    const persons = await Person.find(query);
+    console.log("PERSONS FOUND", persons);
+
+    if (!persons.length) return []; // No matches found
+  
+    // Fetch associated PersonNodes for each Person
+    const results = await Promise.all(
+      persons.map(async (person) => {
+        const personNode = await PersonNode.findOne({ person: person._id }).populate('familyTree');
+        const user = await UserRepository.findUserById(personNode.familyTree.owner);
+        const personDetails = {
+          userId : user._id,
+          firstName : person.generalInformation.firstName,
+          middleName : person.generalInformation.middleName,
+          lastName : person.generalInformation.lastName,
+          nodeId : personNode._id
+        }
+        return personDetails;
+      })
+    );
+  
+    return results;
+  }
+  
+
   static async getUserRelations(userId) {
     return await Person.find({ relatedUser: userId })
       .select('name birthdate deathdate relatedUser')
       .lean();
+  }
+
+  static async findPersonAndUpdate(personId, update) {
+    return await Person.findByIdAndUpdate(personId, { $set: update }, { new: true });
   }
 
   static async findOrCreatePerson(personDetails) {

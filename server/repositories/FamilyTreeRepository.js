@@ -31,7 +31,7 @@ class FamilyTreeRepository {
     };
   
     // Recursive population config for 'children' and 'parents'
-    const populateRelations = (depth = 3) => {
+    const populateRelations = (depth = 4) => {
       if (depth === 0) return [];
       return [
         {
@@ -41,20 +41,13 @@ class FamilyTreeRepository {
             personPopulation, // Populate 'person'
           ],
         },
-        {
-          path: 'parents',
-          populate: [
-            ...populateRelations(depth - 1), // Recursively populate parents
-            personPopulation, // Populate 'person'
-          ],
-        },
         personPopulation, // Populate 'person' at this level
       ];
     };
   
     return await FamilyTree.findOne({ owner: userId }).populate({
       path: 'root',
-      populate: populateRelations(3), // Adjust depth as needed
+      populate: populateRelations(5), // Adjust depth as needed
     });
   }
 

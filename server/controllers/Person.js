@@ -8,6 +8,25 @@ const { profileJwtMiddleware } = require('../utils/middleware');
 const { isValidObjectId } = require('../utils/helper');
 const { upload } = require('../utils/helper');
 
+PersonRouter.get('/find-person', async (req, res, next) => {
+    try {
+        console.log("QUERY", req.query);
+        const { 
+            firstName, 
+            middleName, 
+            lastName, 
+            birthdate 
+        } = req.query;
+
+        const personDetails = { firstName, middleName, lastName, birthdate };
+        console.log("PERSON DETAILS", personDetails);
+        const person = await PersonService.findPersons(personDetails);
+        res.json(person);
+    } catch (error) {
+        next(error);
+    }
+});
+
 PersonRouter.get('/:userId', async (req, res, next) => {
     try {
         const { userId } = req.params;
@@ -23,7 +42,7 @@ PersonRouter.get('/:userId', async (req, res, next) => {
     }
 });
 
-PersonRouter.put('/:userId', profileJwtMiddleware, async (req, res, next) => {
+PersonRouter.patch('/:userId', profileJwtMiddleware, async (req, res, next) => {
     try {
         const { userId } = req.params;
         const { body } = req;

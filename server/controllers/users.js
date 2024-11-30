@@ -5,10 +5,10 @@ const logger = require('../utils/logger');
 const UsersRouter = express.Router();
 
 UsersRouter.post('/', async (request, response) => {
-  const { firstname, lastname, username, password } = request.body;
+  const { firstName, lastName, username, password } = request.body;
 
   try {
-    await UserService.createUser(firstname, lastname, username, password);
+    await UserService.createUser(firstName, lastName, username, password);
     response.status(201).json({ message: "Registered successfully!" });
   } catch (error) {
     logger.error('Error saving user:', error.message);
