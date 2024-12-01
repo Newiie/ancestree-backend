@@ -1,5 +1,7 @@
 // repositories/UserRepository.js
 const User = require('../models/User');
+const { InvalidObjectIdError } = require('../utils/customErrors');
+const { isValidObjectId } = require('../utils/helper');
 
 class UserRepository {
   
@@ -13,7 +15,10 @@ class UserRepository {
   }
 
   static async findUserById(userId) {
-    return await User.findById(userId).exec();
+    if (!isValidObjectId(userId)) {
+      throw new InvalidObjectIdError('Invalid User ID');
+    }
+    return await User.findById(userId);
   }
 
   static async getAllUsersWithFamilyTree() {

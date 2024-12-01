@@ -2,9 +2,10 @@
 const express = require('express');
 const UserService = require('../services/UserService');
 const logger = require('../utils/logger');
+const { jwtMiddleware } = require('../utils/middleware');
 const UsersRouter = express.Router();
 
-UsersRouter.post('/', async (request, response) => {
+UsersRouter.post('/', async (request, response, next) => {
   const { firstName, lastName, username, password } = request.body;
 
   try {
@@ -12,18 +13,41 @@ UsersRouter.post('/', async (request, response) => {
     response.status(201).json({ message: "Registered successfully!" });
   } catch (error) {
     logger.error('Error saving user:', error.message);
-    response.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
-UsersRouter.get('/', async (request, response) => {
+UsersRouter.get('/', async (request, response, next) => {
   try {
     const users = await UserService.getAllUsersWithRelations();
     response.json(users);
   } catch (error) {
-    console.error('Error fetching users:', error.message);
-    response.status(500).json({ error: 'Something went wrong' });
+    next(error);
   }
+});
+
+UsersRouter.post('/send-friend-request/:friendId', jwtMiddleware, async (request, response, next) => { 
+  try {
+    const { friendId } = request.params;
+    const { gUserID } = request;
+    console.log("G USER ID", gUserID);
+    console.log("FRIEND ID", friendId);
+    await UserService.sendFriendRequest(gUserID, friendId);
+    response.status(200).json({ message: "User added successfully!" });
+  } catch (error) {
+    next(error);
+  }  
+});
+
+UsersRouter.post('/accept-friend-request/:friendId', async (request, response, next) => { 
+  try {
+    const { friendId } = request.params;
+    const { gUserID } = request;
+    await UserService.acceptFriendRequest(gUserID, friendId);
+    response.status(200).json({ message: "User added successfully!" });
+  } catch (error) {
+    next(error);
+  }  
 });
 
 module.exports = UsersRouter;

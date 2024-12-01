@@ -33,12 +33,14 @@ class PersonRepository {
       persons.map(async (person) => {
         const personNode = await PersonNode.findOne({ person: person._id }).populate('familyTree');
         const user = await UserRepository.findUserById(personNode.familyTree.owner);
+        const account = await Person.findOne({ _id: user.person._id.toString() });
+        console.log("ACCOUNT", account);
         const personDetails = {
           userId : user._id,
-          firstName : person.generalInformation.firstName,
-          middleName : person.generalInformation.middleName,
-          lastName : person.generalInformation.lastName,
-          nodeId : personNode._id
+          firstName : account.generalInformation.firstName,
+          middleName : account.generalInformation.middleName,
+          lastName : account.generalInformation.lastName,
+          profilePicture : account.profilePicture
         }
         return personDetails;
       })

@@ -35,10 +35,13 @@ const jwtMiddleware = async (req, res, next) => {
           return res.status(401).json({ error: 'user not found' });
       }
 
-      if (user.familyTree.toString() !== treeId) {
-        return res.status(401).json({ error: 'You are not authorized to perform this action' });
+      if (treeId) {
+        if (user.familyTree.toString() !== treeId) {
+          return res.status(401).json({ error: 'You are not authorized to perform this action' });
+        }
       }
-      
+    
+      req.gUserID = userId;
       req.user = user;
       next();
   } catch (error) {
@@ -61,7 +64,7 @@ const profileJwtMiddleware = async (req, res, next) => {
     if (tokenUserId !== userId) {
       return res.status(401).json({ error: 'You are not authorized to access this profile' });
     }
-
+    req.gUserID = userId;
     req.user = await User.findById(tokenUserId);
     if (!req.user) {
       return res.status(401).json({ error: 'user not found' });

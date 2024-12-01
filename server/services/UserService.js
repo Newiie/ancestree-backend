@@ -7,6 +7,47 @@ const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 
 class UserService {
 
+    static async  sendFriendRequest(senderId, recipientId) {
+      console.log("SERVCIE ", senderId, recipientId)
+      const recipient = await UserRepository.findUserById(recipientId);
+      if (!recipient) throw new Error('Recipient not found');
+    
+      if (!recipient.friendRequest.includes(senderId) && !recipient.friends.includes(senderId)) {
+        recipient.friendRequest.push(senderId);
+        await recipient.save();
+        console.log('Friend request sent!');
+      } else {
+        console.log('Friend request already sent or already friends.');
+      }
+    }
+
+    static async  acceptFriendRequest(gUserID, friendId) {
+      const user = await UserRepository.findUserById(gUserID);
+      const friend = await UserRepository.findUserById(friendId);
+    
+      if (!user || !friend) throw new Error('User or friend not found');
+    
+      // Ensure the sender has actually sent a friend request
+      if (user.friendRequest.includes(friend.id)) {
+        // Add each other to friends
+        user.friends.push(friend.id);
+        friend.friends.push(user.id);
+    
+        // Remove the sender from friend requests
+        user.friendRequest = user.friendRequest.filter((id) => id.toString() !== friend.id);
+        friend.friendRequest = friend.friendRequest.filter((id) => id.toString() !== user.id);
+    
+        // Save the changes
+        await user.save();
+        await friend.save();
+    
+        console.log('Friend request accepted!');
+      } else {
+        console.log('No friend request found from this user.');
+      }
+    }
+    
+
     static async createUser(firstName, lastName, username, password) {
         if (!username || !password) {
           throw new Error('Username and password are required');

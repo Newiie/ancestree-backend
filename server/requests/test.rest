@@ -5,7 +5,7 @@ POST http://localhost:3001/api/users
 Content-Type: application/json
 
 {
-    "username": "jethrocenas",
+    "username": "user1",
     "firstName": "luke",
     "lastName": "Luukkainen",
     "password": "password"
@@ -20,3 +20,14 @@ Content-Type: application/json
     "password": "password"
 }
 
+
+
+### SEND FRIEND REQUEST
+POST http://localhost:3001/api/users/send-friend-request/674b06dac90b69ba6577c13d
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzRiZTc2MmE1MzY5YTA1ZmRhZDFhYWYiLCJpYXQiOjE3MzMwMjc2ODcsImV4cCI6MTczMzExNDA4N30.r2appGEgaJk4CLSbP6BAi04oVMtiN_sBtjpcPeGwHn0
+
+### ACCEPT FRIEND REQUEST
+POST http://localhost:3001/api/users/accept-friend-request/674b06dac90b69ba6577c13d
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzRiZTc2MmE1MzY5YTA1ZmRhZDFhYWYiLCJpYXQiOjE3MzMwMjc2ODcsImV4cCI6MTczMzExNDA4N30.r2appGEgaJk4CLSbP6BAi04oVMtiN_sBtjpcPeGwHn0

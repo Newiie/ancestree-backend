@@ -28,9 +28,10 @@ class PersonService {
 
         const user = await UserRepository.findUserById(userId);
         const person = await PersonRepository.getPersonById(user.person._id);
+        const isFriend = user.friends.includes(person._id);
 
         const { treeId, personId, ...filteredPerson } = person.toJSON();
-        return { ...filteredPerson, userId: user._id };
+        return { ...filteredPerson, userId: user._id, isFriend };
     }
 
     static async updatePerson(personId, update) {
