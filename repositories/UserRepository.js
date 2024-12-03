@@ -1,6 +1,6 @@
-const User = require('../models/User');
+const User = require('../server/models/Userser');
 const { InvalidObjectIdError } = require('../utils/customErrors');
-const { isValidObjectId } = require('../utils/helper');
+const { isValidObjectId } = require('../../utils/helper/helper');
 
 class UserRepository {
   

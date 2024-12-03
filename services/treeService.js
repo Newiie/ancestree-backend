@@ -1,7 +1,7 @@
-const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
-const PersonNodeRepository = require('../repositories/PersonNodeRepository');
-const PersonRepository = require('../repositories/PersonRepository');
-const UserRepository = require('../repositories/UserRepository');
+const FamilyTreeRepository = require('../repositories/FamilyTreeRepositoryory');
+const PersonNodeRepository = require('../repositories/PersonNodeRepositoryory');
+const PersonRepository = require('../repositories/PersonRepositoryory');
+const UserRepository = require('../repositories/UserRepositoryory');
 
 
 class TreeService {

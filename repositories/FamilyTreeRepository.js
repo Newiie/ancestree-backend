@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const FamilyTree = require('../models/FamilyTree');
+const FamilyTree = require('../server/models/FamilyTreeree');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors');
 
 class FamilyTreeRepository {
