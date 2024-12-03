@@ -1,9 +1,9 @@
 // services/UserService.js
 const bcrypt = require('bcrypt');
-const UserRepository = require('../repositories/UserRepositoryory');
-const PersonRepository = require('../repositories/PersonRepositoryory');
-const PersonNodeRepository = require('../repositories/PersonNodeRepositoryory');
-const FamilyTreeRepository = require('../repositories/FamilyTreeRepositoryory');
+const UserRepository = require('../repositories/UserRepository');
+const PersonRepository = require('../repositories/PersonRepository');
+const PersonNodeRepository = require('../repositories/PersonNodeRepository');
+const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 
 
 class UserService {

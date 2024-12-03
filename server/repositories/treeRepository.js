@@ -1,7 +1,7 @@
-const FamilyTree = require('../server/models/FamilyTreeree');
-const PersonNode = require('../server/models/PersonNodeode');
+const FamilyTree = require('../models/FamilyTree');
+const PersonNode = require('../models/PersonNode');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors'); 
-const { isValidObjectId } = require('../../utils/helper/helper');
+const { isValidObjectId } = require('../utils/helper');
 
 const getFamilyTreeById = async (id) => {
   if (!isValidObjectId(id)) {

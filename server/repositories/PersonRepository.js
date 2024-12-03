@@ -1,6 +1,6 @@
 // repositories/PersonRepository.js
-const Person = require('../server/models/Personson');
-const PersonNode = require('../server/models/PersonNodeode');
+const Person = require('../models/Person');
+const PersonNode = require('../models/PersonNode');
 const UserRepository = require('./UserRepository');
 
 class PersonRepository {

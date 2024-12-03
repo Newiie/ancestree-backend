@@ -1,8 +1,8 @@
-const PersonRepository = require('../repositories/PersonRepository.jsory.js');
-const UserRepository = require('../repositories/UserRepository.jsory.js');
-const { uploadToS3, getUrlImage } = require('../../utils/aws.js/aws.js');
+const PersonRepository = require('../repositories/PersonRepository');
+const UserRepository = require('../repositories/UserRepository');
+const { uploadToS3, getUrlImage } = require('../utils/aws.js');
 
-const { isValidObjectId } = require('../../utils/helper.js/helper.js');
+const { isValidObjectId } = require('../utils/helper');
 
 class PersonService {
 
