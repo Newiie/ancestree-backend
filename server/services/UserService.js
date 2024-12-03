@@ -21,6 +21,11 @@ class UserService {
       }
     }
 
+    static async getUserFriendsField(gUserID) {
+      const user = await UserRepository.getFriendsFields(gUserID);
+      return user;
+    }
+
     static async  acceptFriendRequest(gUserID, friendId) {
       const user = await UserRepository.findUserById(gUserID);
       const friend = await UserRepository.findUserById(friendId);
@@ -32,10 +37,10 @@ class UserService {
         // Add each other to friends
         user.friends.push(friend.id);
         friend.friends.push(user.id);
-    
+        
         // Remove the sender from friend requests
-        user.friendRequest = user.friendRequest.filter((id) => id.toString() !== friend.id);
-        friend.friendRequest = friend.friendRequest.filter((id) => id.toString() !== user.id);
+        user.friendRequest = user.friendRequest.filter((id) => id != friend.id);
+        friend.friendRequest = friend.friendRequest.filter((id) => id != user.id);
     
         // Save the changes
         await user.save();

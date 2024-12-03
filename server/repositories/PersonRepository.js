@@ -11,43 +11,56 @@ class PersonRepository {
   }
 
   static async findPersonRelationship(personDetails) {
-    console.log("FIND SIMLAR PERSONS ", personDetails);
+    console.log("FIND SIMILAR PERSONS ", personDetails);
     const { firstName, middleName, lastName, birthdate } = personDetails;
+  
     // Construct the query object
     const query = {
       'generalInformation.firstName': firstName,
       'generalInformation.lastName': lastName,
     };
-  
     if (middleName) query['generalInformation.middleName'] = middleName;
     if (birthdate) query['generalInformation.birthdate'] = birthdate;
   
     // Execute the query to find all matching Persons
     const persons = await Person.find(query);
     console.log("PERSONS FOUND", persons);
-
+  
     if (!persons.length) return []; // No matches found
   
-    // Fetch associated PersonNodes for each Person
-    const results = await Promise.all(
-      persons.map(async (person) => {
-        const personNode = await PersonNode.findOne({ person: person._id }).populate('familyTree');
-        const user = await UserRepository.findUserById(personNode.familyTree.owner);
-        const account = await Person.findOne({ _id: user.person._id.toString() });
-        console.log("ACCOUNT", account);
-        const personDetails = {
-          userId : user._id,
-          firstName : account.generalInformation.firstName,
-          middleName : account.generalInformation.middleName,
-          lastName : account.generalInformation.lastName,
-          profilePicture : account.profilePicture
-        }
-        return personDetails;
-      })
-    );
+    // Fetch associated PersonNodes and filter unique results by userId
+    const resultSet = new Map();
   
-    return results;
+    for (const person of persons) {
+      try {
+        const personNode = await PersonNode.findOne({ person: person._id }).populate('familyTree');
+        if (!personNode || !personNode.familyTree) continue;
+  
+        const user = await UserRepository.findUserById(personNode.familyTree.owner);
+        if (!user || !user.person) continue;
+  
+        const account = await Person.findOne({ _id: user.person._id.toString() });
+        if (!account) continue;
+  
+        const personDetails = {
+          userId: user._id.toString(),
+          firstName: account.generalInformation.firstName,
+          middleName: account.generalInformation.middleName,
+          lastName: account.generalInformation.lastName,
+          profilePicture: account.profilePicture,
+        };
+  
+        // Use userId as the key to ensure uniqueness
+        resultSet.set(personDetails.userId, personDetails);
+      } catch (error) {
+        console.error("Error fetching person relationships:", error);
+      }
+    }
+  
+    // Convert the Map back to an array of unique values
+    return Array.from(resultSet.values());
   }
+  
   
 
   static async getUserRelations(userId) {

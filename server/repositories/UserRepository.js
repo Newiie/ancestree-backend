@@ -10,6 +10,24 @@ class UserRepository {
     return await user.save();
   }
 
+  static async getFriendsFields(userId) {
+    const user = await User.findById(userId, 'friendRequest friends')
+      .populate({
+        path: 'friends',
+        populate: {
+          path: 'person',
+          select: 'generalInformation.firstName generalInformation.middleName generalInformation.lastName'
+        }
+      });
+  
+    if (!user) {
+      throw new Error('User not found');
+    }
+  
+    const { friendRequest, friends } = user;
+    return { friendRequest, friends };
+  }
+
   static async findUserByUsername(username) {
     return await User.findOne({ username }).exec();
   }
