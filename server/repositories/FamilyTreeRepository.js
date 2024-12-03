@@ -1,4 +1,3 @@
-// repositories/FamilyTreeRepository.js
 const mongoose = require('mongoose');
 const FamilyTree = require('../models/FamilyTree');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors');

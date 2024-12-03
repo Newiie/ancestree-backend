@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+ 
 
 const FamilyTreeSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

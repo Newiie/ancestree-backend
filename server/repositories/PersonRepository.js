@@ -4,7 +4,6 @@ const PersonNode = require('../models/PersonNode');
 const UserRepository = require('./UserRepository');
 
 class PersonRepository {
-   // Method to create a Person document
   static async createPerson(personData) {
     const person = new Person(personData);
     return await person.save();
@@ -14,7 +13,6 @@ class PersonRepository {
     console.log("FIND SIMILAR PERSONS ", personDetails);
     const { firstName, middleName, lastName, birthdate } = personDetails;
   
-    // Construct the query object
     const query = {
       'generalInformation.firstName': firstName,
       'generalInformation.lastName': lastName,

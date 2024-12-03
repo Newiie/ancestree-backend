@@ -18,7 +18,8 @@ UsersRouter.post('/', async (request, response, next) => {
 });
 
 UsersRouter.get('/friends-list', jwtMiddleware, async (request, response, next) => {
-  try {
+  try { 
+    
     const { gUserID } = request;
     const user = await UserService.getUserFriendsField(gUserID);
     response.json(user);

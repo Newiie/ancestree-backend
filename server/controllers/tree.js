@@ -7,7 +7,7 @@ const {
 
 // PUBLIC GET TREE ROUTE
 TreeRouter.get('/family-tree/:userId', async (req, res, next) => {
-  try {
+  try { 
     const { userId } = req.params;
     console.log("USER ID", userId);
     const result = await TreeService.getTree(userId);

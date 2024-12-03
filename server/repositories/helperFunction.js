@@ -1,6 +1,3 @@
-const mongoose = require('mongoose');
-const FamilyTree = require('../models/FamilyTree'); // Assuming you have a FamilyTree model
-const PersonNode = require('../models/PersonNode');
 
 /**
  * Helper function to recursively populate the tree

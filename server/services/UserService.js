@@ -5,6 +5,7 @@ const PersonRepository = require('../repositories/PersonRepository');
 const PersonNodeRepository = require('../repositories/PersonNodeRepository');
 const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 
+
 class UserService {
 
     static async  sendFriendRequest(senderId, recipientId) {

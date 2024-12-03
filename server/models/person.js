@@ -55,8 +55,6 @@ const PersonSchema = new mongoose.Schema({
   treeId: { type: mongoose.Schema.Types.ObjectId, ref: 'FamilyTree', required: false},
 });
 
-
-
 PersonSchema.set('toJSON', {
   transform: function (doc, ret, options) {
     ret.personId = ret._id;

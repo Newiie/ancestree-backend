@@ -1,9 +1,7 @@
-// const mongoose = require('mongoose');
 const FamilyTree = require('../models/FamilyTree');
 const PersonNode = require('../models/PersonNode');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors'); 
 const { isValidObjectId } = require('../utils/helper');
-// const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const getFamilyTreeById = async (id) => {
   if (!isValidObjectId(id)) {

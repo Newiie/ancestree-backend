@@ -2,7 +2,6 @@ const PersonRepository = require('../repositories/PersonRepository');
 const UserRepository = require('../repositories/UserRepository');
 const { uploadToS3, getUrlImage } = require('../utils/aws.js');
 
-
 const { isValidObjectId } = require('../utils/helper');
 
 class PersonService {

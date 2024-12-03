@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const PersonNodeSchema = new mongoose.Schema({
   person: { type: mongoose.Schema.Types.ObjectId, ref: 'Person' },
   familyTree: { type: mongoose.Schema.Types.ObjectId, ref: 'FamilyTree' }, 

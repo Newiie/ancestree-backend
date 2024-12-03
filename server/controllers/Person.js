@@ -9,7 +9,7 @@ const { isValidObjectId } = require('../utils/helper');
 const { upload } = require('../utils/helper');
 
 PersonRouter.get('/find-person', async (req, res, next) => {
-    try {
+    try { 
         console.log("QUERY", req.query);
         const { 
             firstName, 

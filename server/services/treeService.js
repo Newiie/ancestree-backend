@@ -3,6 +3,7 @@ const PersonNodeRepository = require('../repositories/PersonNodeRepository');
 const PersonRepository = require('../repositories/PersonRepository');
 const UserRepository = require('../repositories/UserRepository');
 
+
 class TreeService {
 
   static async getTree(userId) {
