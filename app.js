@@ -35,7 +35,7 @@ app.use(express.static('dist'))
 app.use(express.json())
 app.use(middleware.requestLogger)
 
-// // RESET
+// RESET
 const reset = async () => {
   const resetFunction = async () => {
     await User.deleteMany({});

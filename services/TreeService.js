@@ -38,18 +38,14 @@ class TreeService {
         return { status: 404, message: 'Family tree not found' };
       }
 
-      // console.log("NODE ID", nodeId);
-      // console.log("FAMILY TREE", familyTree);
       const parentNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person', 'children', 'parents']);
       if (!parentNode) {
         return { status: 404, message: 'Parent node not found' };
       }
 
-      // console.log("PARENT NODE", parentNode);
       let childPerson = await PersonRepository.findOrCreatePerson(childDetails);
       let childNode = await PersonNodeRepository.getPersonNodeByPersonId(childPerson._id, ['person', 'parents']);
 
-      // console.log("CHILD NODE", childNode);
       if (!childNode) {
         childNode = await PersonNodeRepository.createPersonNode({
           person: childPerson._id,
@@ -68,6 +64,9 @@ class TreeService {
       const potentialMatch = await this.checkForPotentialMatch(childDetails, childNode, treeId);
       
       if (potentialMatch.length > 0) {
+
+        console.log('Potential match found:', potentialMatch);
+
         return {
           status: 200,
           message: 'Child added successfully. Potential match found in another user\'s tree.',
@@ -181,6 +180,8 @@ class TreeService {
       if (userTree) {
         const similarPersons = await this.findSimilarPersonInTree(userTreeId, personDetails);
         
+        console.log('SIMILAR PERSONS', similarPersons);
+
         for (const existingPerson of similarPersons) {
           const existingNode = await PersonNodeRepository.getPersonNodeByPersonId(existingPerson._id, ['parents', 'children']);
           const hasCommonRelatives = await this.checkForCommonRelatives(newNode, existingNode);
@@ -209,9 +210,10 @@ class TreeService {
 
   static async findSimilarPersonInTree(treeId, personDetails) {
     const { name, birthdate, deathdate } = personDetails;
-
+    console.log("PERSON DETAILS SERVICE", personDetails)
     const similarPersons = await PersonRepository.findSimilarPersons(personDetails);
 
+    console.log('SIMILAR PERSONS IN TREE', similarPersons);
     const filteredPersons = similarPersons.filter(person => person.treeId && person.treeId.toString() !== treeId);
     return filteredPersons;
   }
@@ -240,10 +242,13 @@ class TreeService {
   }
 
   static comparePersonDetails(person1, person2) {
-    const nameMatch = person1.name.trim().toLowerCase() === person2.name.trim().toLowerCase();
-    const birthdateMatch = person1.birthdate && person2.birthdate && new Date(person1.birthdate).getTime() === new Date(person2.birthdate).getTime();
+    const firstNameMatch = person1.generalInformation.firstName.trim().toLowerCase() === person2.generalInformation.firstName.trim().toLowerCase();
+    const lastNameMatch = person1.generalInformation.lastName.trim().toLowerCase() === person2.generalInformation.lastName.trim().toLowerCase();
+    const birthdateMatch = 
+    person1.generalInformation.birthdate && person2.generalInformation.birthdate 
+    && new Date(person1.generalInformation.birthdate).getTime() === new Date(person2.generalInformation.birthdate).getTime();
 
-    return nameMatch && birthdateMatch;
+    return firstNameMatch && lastNameMatch && birthdateMatch;
   }
 
   static async isAncestor(ancestorId, node, generation = 1) {

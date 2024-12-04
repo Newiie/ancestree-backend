@@ -87,28 +87,30 @@ class PersonNodeRepository {
 }
 
 
-  static async getPersonNodeByPersonId(personId, populateFields = []) {
-    if (!this.isValidObjectId(personId)) {
+static async getPersonNodeByPersonId(personId, populateFields = []) {
+  if (!this.isValidObjectId(personId)) {
       throw new InvalidObjectIdError('Invalid Person ID');
-    }
-    console.log("PERSON ID", personId);
-
-    // Find the PersonNode by personId
-    let personNode = await PersonNode.findOne({ 'person': personId });
-    if (!personNode) {
-      return null;
-    }
-
-    // Populate the specified fields
-    populateFields.forEach(field => {
-      personNode = personNode.populate(field);
-    });
-
-    // Execute the query
-    personNode = await personNode.execPopulate();
-
-    return personNode;
   }
+  console.log("PERSON ID", personId);
+
+  // Prepare the query to find the PersonNode by personId
+  let query = PersonNode.findOne({ person: personId });
+
+  // Apply population for the specified fields
+  populateFields.forEach(field => {
+      query = query.populate(field);
+  });
+
+  // Execute the query
+  const personNode = await query.exec();
+
+  if (!personNode) {
+      return null;
+  }
+
+  return personNode;
+}
+
 
   static async createPersonNode(data) {
     const newNode = new PersonNode(data);

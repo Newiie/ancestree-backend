@@ -80,13 +80,31 @@ class PersonRepository {
   }
 
   static async findSimilarPersons(personDetails) {
-    const { name, birthdate, deathdate } = personDetails;
+    const { 
+      generalInformation: { 
+        firstName, 
+        lastName 
+      }
+    } = personDetails;
+    console.log("PERSON DETAILS REPOSITORY", personDetails);
+    // Find an exact match for generalInformation (debugging purposes)
+    const exactMatch = await Person.findOne({
+      'generalInformation.firstName': firstName,
+      'generalInformation.lastName': lastName
+    });
+    console.log("Exact Match:", exactMatch);
+  
+    if (!firstName || !lastName) {
+      throw new Error('First name and last name are required.');
+    }
+  
+    // Find similar matches using regex for case-insensitive matching
     return await Person.find({
-      name: { $regex: new RegExp(name, 'i') }, // Case-insensitive name match
-      birthdate: birthdate ? birthdate : { $exists: true },
-      deathdate: deathdate ? deathdate : { $exists: true }
+      'generalInformation.firstName': { $regex: new RegExp(firstName, 'i') },
+      'generalInformation.lastName': { $regex: new RegExp(lastName, 'i') }
     }).lean();
   }
+  
 
   static async getPersonById(personId) {
     return await Person.findById(personId);
