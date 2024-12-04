@@ -36,6 +36,11 @@ PersonRouter.get('/:userId', async (req, res, next) => {
         }
 
         const person = await PersonService.getPersonByUserId(userId);
+        const friendsList = await UserRepository.getFriendsFields(userId);
+
+        person.friendsList = friendsList.friends;
+        person.friendRequestList = friendsList.friendRequest;
+        console.log("PERSON", person);
         res.json(person);
     } catch (error) {
         next(error);

@@ -21,9 +21,8 @@ Content-Type: application/json
 }
 
 ### GET FRIENDS
-GET http://localhost:3001/api/users/friends-list
+GET http://localhost:3001/api/users/friends-list/674b10b27ff3890a4f859671
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhyb2NlbmFzIiwiaWQiOiI2NzRiMDZkYWM5MGI2OWJhNjU3N2MxM2QiLCJpYXQiOjE3MzMyMTc1NTEsImV4cCI6MTczMzMwMzk1MX0.P8z0a6IumnFFy9EKpQTODjwhsmnu6IK6QS4PSP0guD8
 
 ### SEND FRIEND REQUEST
 POST http://localhost:3001/api/users/send-friend-request/674b06dac90b69ba6577c13d

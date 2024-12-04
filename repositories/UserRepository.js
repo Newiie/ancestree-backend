@@ -15,17 +15,27 @@ class UserRepository {
         path: 'friends',
         populate: {
           path: 'person',
-          select: 'generalInformation.firstName generalInformation.middleName generalInformation.lastName'
         }
       });
-  
+
     if (!user) {
       throw new Error('User not found');
     }
-  
+
     const { friendRequest, friends } = user;
-    return { friendRequest, friends };
-  }
+    console.log('Friends:', friends);
+    // Map friends to the desired JSON format
+    const formattedFriends = friends.map(friend => ({
+      firstName: friend.person.generalInformation.firstName,
+      lastName: friend.person.generalInformation.lastName,
+      profilePicture: friend.person.profilePicture,
+      userId: friend._id.toString()
+    }));
+
+    console.log('Formatted friends:', formattedFriends);
+
+    return { friendRequest, friends: formattedFriends };
+}
 
   static async findUserByUsername(username) {
     return await User.findOne({ username }).exec();

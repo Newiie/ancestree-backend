@@ -17,11 +17,10 @@ UsersRouter.post('/', async (request, response, next) => {
   }
 });
 
-UsersRouter.get('/friends-list', jwtMiddleware, async (request, response, next) => {
+UsersRouter.get('/friends-list/:userId', async (request, response, next) => {
   try { 
-    
-    const { gUserID } = request;
-    const user = await UserService.getUserFriendsField(gUserID);
+    const { userId } = request.params;
+    const user = await UserService.getUserFriendsField(userId);
     response.json(user);
   } catch (error) {
     next(error);
@@ -46,6 +45,19 @@ UsersRouter.post('/send-friend-request/:friendId', jwtMiddleware, async (request
     console.log("G USER ID", gUserID);
     console.log("FRIEND ID", friendId);
     await UserService.sendFriendRequest(gUserID, friendId);
+    response.status(200).json({ message: "User added successfully!" });
+  } catch (error) {
+    next(error);
+  }  
+});
+
+UsersRouter.post('/cancel-friend-request/:friendId', jwtMiddleware, async (request, response, next) => {
+  try {
+    const { friendId } = request.params;
+    const { gUserID } = request;
+    console.log("G USER ID", gUserID);
+    console.log("FRIEND ID", friendId);
+    await UserService.cancelFriendRequest(gUserID, friendId);
     response.status(200).json({ message: "User added successfully!" });
   } catch (error) {
     next(error);
