@@ -7,9 +7,7 @@ GET http://localhost:3001/api/person/find-person?firstName=Jethro&lastName=Cenas
 
 ### GET NOTIFICATIONS
 GET http://localhost:3001/api/users/notifications
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhybyIsImlkIjoiNjc1MDVjYWI2NDdiY2VkY2U2NjJkZTgwIiwiaWF0IjoxNzMzMzE5OTIxLCJleHAiOjE3MzM0MDYzMjF9.woo4ObLt8V4lIvoBKl0I0ZdbjQkdl6JPPPzzsFYzPas
-
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJhaXphIiwiaWQiOiI2NzUwNWNhMzY0N2JjZWRjZTY2MmRlNzQiLCJpYXQiOjE3MzMzMjQwMTUsImV4cCI6MTczMzQxMDQxNX0.44EmWtzARINJDS3Vu0B5IQtVadR_rXGYmMyvgaKvCO4
 ### PUT PERSON
 PUT http://localhost:3001/api/person/6728ff74dbd3521e6125c616
 Content-Type: application/json

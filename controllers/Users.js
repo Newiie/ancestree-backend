@@ -29,9 +29,10 @@ UsersRouter.get('/friends-list/:userId', async (request, response, next) => {
 
 UsersRouter.get('/notifications/', jwtMiddleware, async (request, response, next) => {
   try { 
-    const {gUserID} = request;
-    const user = await UserService.getUserNotifications(gUserID, false);
-    response.json(user);
+    const { gUserID } = request;
+    const notifications = await UserService.getUserNotifications(gUserID, false);
+    console.log(notifications);
+    response.json(notifications);
   } catch (error) {
     next(error);
   }
