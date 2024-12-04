@@ -2,7 +2,7 @@ const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 const PersonNodeRepository = require('../repositories/PersonNodeRepository');
 const PersonRepository = require('../repositories/PersonRepository');
 const UserRepository = require('../repositories/UserRepository');
-
+const Notification = require('../models/Notification');
 
 class TreeService {
 
@@ -30,7 +30,7 @@ class TreeService {
     }
   }
 
-  static async addChild(treeId, nodeId, childDetails) {
+  static async addChild(treeId, nodeId, childDetails, gUserID) {
     try {
       childDetails.treeId = treeId;
       const familyTree = await FamilyTreeRepository.getFamilyTreeById(treeId);
@@ -65,13 +65,39 @@ class TreeService {
       
       if (potentialMatch.length > 0) {
 
-        console.log('Potential match found:', potentialMatch);
+        const notificationPromises = [];
+
+        // Notify the user adding the child
+        notificationPromises.push(
+          Notification.create({
+            recipient: gUserID, 
+            message: `A potential match was found on another user's tree.`,
+            type: 'MATCH',
+            relatedId: childNode._id 
+          })
+        );
+
+        // Notify all potential matches
+        potentialMatch.forEach(match => {
+          notificationPromises.push(
+            Notification.create({
+              recipient: match.userData.userId, 
+              message: 'A potential match was found in your family tree!',
+              type: 'MATCH',
+              relatedId: match.personData.personId 
+            })
+          );
+        });
+
+        // Execute all notification promises
+        await Promise.all(notificationPromises);
+
 
         return {
           status: 200,
           message: 'Child added successfully. Potential match found in another user\'s tree.',
-          parentNode,
-          childNode,
+          // parentNode,
+          // childNode,
           potentialMatch
         };
       }
@@ -119,11 +145,13 @@ class TreeService {
       const potentialMatch = await this.checkForPotentialMatch(parentDetails, parentNode, treeId);
 
       if (potentialMatch.length > 0) {
+          
+
         return {
           status: 200,
           message: 'Parent added successfully. Potential match found in another user\'s tree.',
-          parentNode,
-          childNode,
+          // parentNode,
+          // childNode,
           potentialMatch
         };
       }
@@ -180,22 +208,31 @@ class TreeService {
       if (userTree) {
         const similarPersons = await this.findSimilarPersonInTree(userTreeId, personDetails);
         
-        console.log('SIMILAR PERSONS', similarPersons);
-
         for (const existingPerson of similarPersons) {
           const existingNode = await PersonNodeRepository.getPersonNodeByPersonId(existingPerson._id, ['parents', 'children']);
           const hasCommonRelatives = await this.checkForCommonRelatives(newNode, existingNode);
           
+          const userPerson = await PersonRepository.getPersonById(user.person._id);
           const potentialMatch = {
-            personId: existingPerson._id,
-            treeId: existingPerson.treeId,
-            hasCommonRelatives
+            userData: {
+              userId: user._id,
+              firstName: userPerson.generalInformation.firstName,
+              lastName: userPerson.generalInformation.lastName
+            },
+            personData: {
+              personId: existingPerson._id,
+              treeId: existingPerson.treeId,
+              firstName: existingPerson.generalInformation.firstName,
+              lastName: existingPerson.generalInformation.lastName,
+              hasCommonRelatives
+            }
           };
 
+          console.log('Potential match:', potentialMatch);
           // Check if this person is already in potentialMatches
           const isDuplicate = potentialMatches.some(match => 
-            match.personId.toString() === potentialMatch.personId.toString() &&
-            match.treeId.toString() === potentialMatch.treeId.toString()
+            match.personData.personId.toString() === potentialMatch.personData.personId.toString() &&
+            match.personData.treeId.toString() === potentialMatch.personData.treeId.toString()
           );
 
           if (!isDuplicate) {

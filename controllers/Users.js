@@ -27,7 +27,25 @@ UsersRouter.get('/friends-list/:userId', async (request, response, next) => {
   }
 });
 
+UsersRouter.get('/notifications/', jwtMiddleware, async (request, response, next) => {
+  try { 
+    const {gUserID} = request;
+    const user = await UserService.getUserNotifications(gUserID, false);
+    response.json(user);
+  } catch (error) {
+    next(error);
+  }
+});
 
+UsersRouter.post('/read-notification/', jwtMiddleware, async (request, response, next) => {
+  try { 
+    const { notificationId } = request.body;
+    const user = await UserService.markNotificationAsRead(notificationId);
+    response.json(user);
+  } catch (error) {
+    next(error);
+  }
+});
 
 UsersRouter.get('/', async (request, response, next) => {
   try {

@@ -1,11 +1,11 @@
 ### Add Child
 POST http://localhost:3001/api/trees/add-child
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJhaXphIiwiaWQiOiI2NzUwMzFiM2MzYTVjZjI5NTY3MWFhMjYiLCJpYXQiOjE3MzMzMDg5MzUsImV4cCI6MTczMzM5NTMzNX0.3oOs-MHbNAGJwaDCLlb-MDVJgm02jiL2V4YPl6pSf_c
-X-Tree-Id: 675031b3c3a5cf295671aa2c
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhybyIsImlkIjoiNjc1MDVjYWI2NDdiY2VkY2U2NjJkZTgwIiwiaWF0IjoxNzMzMzE5OTIxLCJleHAiOjE3MzM0MDYzMjF9.woo4ObLt8V4lIvoBKl0I0ZdbjQkdl6JPPPzzsFYzPas
+X-Tree-Id: 67505cab647bcedce662de86
 
 {
-    "nodeId": "675031b3c3a5cf295671aa2a",
+    "nodeId": "67505cab647bcedce662de84",
     "childDetails": {
         "generalInformation": {
             "firstName": "Sample",

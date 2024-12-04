@@ -25,7 +25,7 @@ TreeRouter.post('/add-child', async (req, res, next) => {
   try {
     const { nodeId, childDetails } = req.body;
     const treeId = req.headers['x-tree-id'];
-  
+    const { gUserID } = req;
     if (!nodeId || !childDetails) {
       return { status: 400, message: 'Invalid request parameters' };
     }
@@ -34,7 +34,7 @@ TreeRouter.post('/add-child', async (req, res, next) => {
       return { status: 400, message: 'Tree ID is required' };
     }
 
-    const result = await TreeService.addChild(treeId, nodeId, childDetails);
+    const result = await TreeService.addChild(treeId, nodeId, childDetails, gUserID);
     return res.status(result.status).json(result);
   } catch (error) {
     next(error);

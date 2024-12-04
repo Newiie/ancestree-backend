@@ -4,10 +4,9 @@ const UserRepository = require('../repositories/UserRepository');
 const PersonRepository = require('../repositories/PersonRepository');
 const PersonNodeRepository = require('../repositories/PersonNodeRepository');
 const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
-
+const Notification = require('../models/Notification');
 
 class UserService {
-
     static async  sendFriendRequest(senderId, recipientId) {
       console.log("SERVCIE ", senderId, recipientId)
       const recipient = await UserRepository.findUserById(recipientId);
@@ -19,6 +18,30 @@ class UserService {
         console.log('Friend request sent!');
       } else {
         console.log('Friend request already sent or already friends.');
+      }
+    }
+
+    static async markNotificationAsRead(notificationId) {
+      try {
+        const notification = await Notification.findByIdAndUpdate(
+          notificationId,
+          { isRead: true },
+          { new: true }
+        );
+        return notification;
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+        throw error;
+      }
+    }
+
+    static async getUserNotifications(gUserID, isRead = false) {  
+      try {
+        const notifications = await Notification.find({ recipient: gUserID, isRead });
+        return notifications;
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        throw error;
       }
     }
 
