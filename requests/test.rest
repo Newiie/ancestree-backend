@@ -16,8 +16,8 @@ POST http://localhost:3001/api/login
 Content-Type: application/json
 
 {
-    "username" : "raiza",
-    "password": "password"
+    "username" : "meowerz",
+    "password": "botingoyngoy"
 }
 
 ### GET FRIENDS

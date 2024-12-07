@@ -126,8 +126,9 @@ class TreeService {
       if (childNode.parents.length >= 2) {
         return { status: 400, message: 'Cannot add more than two parents' };
       }
-
+      console.log("PARENT DETAILS", parentDetails); 
       let parentPerson = await PersonRepository.findOrCreatePerson(parentDetails);
+      console.log("PARENT PERSON", parentPerson);
       let parentNode = await PersonNodeRepository.getPersonNodeByPersonId(parentPerson._id, ['person', 'children']);
 
       if (!parentNode) {
@@ -141,6 +142,10 @@ class TreeService {
       }
 
       await PersonNodeRepository.addParentToNode(childNode, parentNode._id);
+
+      if (String(familyTree.root) === String(childNode._id)) {
+        await FamilyTreeRepository.updateFamilyTreeRoot(treeId, parentNode._id);
+      }
 
       const potentialMatch = await this.checkForPotentialMatch(parentDetails, parentNode, treeId);
 

@@ -37,14 +37,14 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZ
 ### Add Parent
 POST http://localhost:3001/api/trees/add-parent
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiaWQiOiI2NzQ5NDkzNDY2OWY1ZDEzMDI4ZjJkMTciLCJpYXQiOjE3MzI4NjAwMTksImV4cCI6MTczMjg2MzYxOX0.yS5P1bjX_7hBRkS4sip5_TosZMXfxtz0sE3cm-CUd8g 
-X-Tree-Id: 67494934669f5d13028f2d1d
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1lb3dlcnoiLCJpZCI6IjY3NTI5MDhiZjlkZWRkNGU2M2Q1NGQ2MSIsImlhdCI6MTczMzU4NjY4NiwiZXhwIjoxNzMzNjczMDg2fQ.fsgIhIcaN_36GB8JlR7TRIYPloepiv75NTZ1Kq2pRmk
+X-Tree-Id: 6752908df9dedd4e63d54d78
 
 {
-    "nodeId": "67494934669f5d13028f2d1b",
+    "nodeId": "6752908df9dedd4e63d54d6e",
     "parentDetails": {
         "generalInformation": {
-            "fistName": "Sample",
+            "firstName": "Sample",
             "lastName": "Parent"
         },
         "birthdate": "2040-01-01T00:00:00.000Z",
@@ -66,6 +66,6 @@ X-Tree-Id: 67264b79696ae60bd7847be4
 
 
 ### GET TREE   
-GET http://localhost:3001/api/trees/family-tree/67494934669f5d13028f2d17
+GET http://localhost:3001/api/trees/family-tree/6752908bf9dedd4e63d54d61
 Content-Type: application/json
 

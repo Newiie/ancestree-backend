@@ -7,6 +7,19 @@ class FamilyTreeRepository {
     return mongoose.Types.ObjectId.isValid(id);
   }
 
+  static async updateFamilyTreeRoot(treeId, parentNodeId) {
+    if (!this.isValidObjectId(treeId)) {
+      throw new InvalidObjectIdError('Invalid FamilyTree ID');
+    }
+    const familyTree = await FamilyTree.findById(treeId);
+    if (!familyTree) {
+      throw new NotFoundError('FamilyTree not found');
+    }
+    familyTree.root = parentNodeId;
+    
+    return await familyTree.save();
+  }
+
   static async getFamilyTreeById(id) {
     if (!this.isValidObjectId(id)) {
       throw new InvalidObjectIdError('Invalid FamilyTree ID');
