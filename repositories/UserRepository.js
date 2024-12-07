@@ -24,7 +24,7 @@ class UserRepository {
 
     const { friendRequest, friends } = user;
     console.log('Friends:', friends);
-    // Map friends to the desired JSON format
+    
     const formattedFriends = friends.map(friend => ({
       firstName: friend.person.generalInformation.firstName,
       lastName: friend.person.generalInformation.lastName,

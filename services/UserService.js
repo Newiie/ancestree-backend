@@ -7,13 +7,26 @@ const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 const Notification = require('../models/Notification');
 
 class UserService {
-    static async  sendFriendRequest(senderId, recipientId) {
+
+    static async sendFriendRequest(senderId, recipientId) {
       console.log("SERVCIE ", senderId, recipientId)
       const recipient = await UserRepository.findUserById(recipientId);
+      const sender = await UserRepository.findUserById(senderId);
+      const senderPerson = await PersonRepository.getPersonById(sender.person._id);
+
       if (!recipient) throw new Error('Recipient not found');
     
       if (!recipient.friendRequest.includes(senderId) && !recipient.friends.includes(senderId)) {
         recipient.friendRequest.push(senderId);
+
+        const notification = new Notification({
+          recipient: recipientId,
+          message: 'Friend request from ' + senderPerson.generalInformation.firstName + ' ' + senderPerson.generalInformation.lastName,
+          type: 'FRIEND_REQUEST',
+          relatedId: senderId
+        });
+
+        await notification.save();
         await recipient.save();
         console.log('Friend request sent!');
       } else {
@@ -53,20 +66,36 @@ class UserService {
     static async  acceptFriendRequest(gUserID, friendId) {
       const user = await UserRepository.findUserById(gUserID);
       const friend = await UserRepository.findUserById(friendId);
-    
+
+      const userPerson = await PersonRepository.getPersonById(user.person._id);
+      const friendPerson = await PersonRepository.getPersonById(friend.person._id);
+
       if (!user || !friend) throw new Error('User or friend not found');
     
-      // Ensure the sender has actually sent a friend request
       if (user.friendRequest.includes(friend.id)) {
-        // Add each other to friends
         user.friends.push(friend.id);
         friend.friends.push(user.id);
         
-        // Remove the sender from friend requests
         user.friendRequest = user.friendRequest.filter((id) => id != friend.id);
         friend.friendRequest = friend.friendRequest.filter((id) => id != user.id);
-    
-        // Save the changes
+        
+        const notificationFriend = new Notification({
+          recipient: friend.id,
+          message: 'Friend request accepted by ' + userPerson.generalInformation.firstName + ' ' + userPerson.generalInformation.lastName,
+          type: 'FRIEND_REQUEST',
+          relatedId: user.id
+        });
+
+        const notificationUser = new Notification({
+          recipient: user.id,
+          message: 'You are now friends with ' + friendPerson.generalInformation.firstName + ' ' + friendPerson.generalInformation.lastName,
+          type: 'FRIEND_REQUEST',
+          relatedId: friend.id
+        });
+
+        await notificationFriend.save();
+        await notificationUser.save();
+
         await user.save();
         await friend.save();
     

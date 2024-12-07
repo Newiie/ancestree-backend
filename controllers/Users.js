@@ -38,9 +38,9 @@ UsersRouter.get('/notifications/', jwtMiddleware, async (request, response, next
   }
 });
 
-UsersRouter.post('/read-notification/', jwtMiddleware, async (request, response, next) => {
+UsersRouter.patch('/read-notification/:notificationId', jwtMiddleware, async (request, response, next) => {
   try { 
-    const { notificationId } = request.body;
+    const { notificationId } = request.params;
     const user = await UserService.markNotificationAsRead(notificationId);
     response.json(user);
   } catch (error) {
