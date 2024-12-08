@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const NotificationSchema = new mongoose.Schema({
   recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   message: { type: String, required: true },
-  type: { type: String, enum: ['MATCH', 'FRIEND_REQUEST', 'GENERAL'], default: 'GENERAL' },
+  type: { type: String, enum: ['MATCH', 'FRIEND_REQUEST', 'GENERAL', 'CONNECT'], default: 'GENERAL' },
   relatedId: { type: mongoose.Schema.Types.ObjectId }, 
   createdAt: { type: Date, default: Date.now },
   isRead: { type: Boolean, default: false }

@@ -20,6 +20,31 @@ TreeRouter.get('/family-tree/:userId', async (req, res, next) => {
 // --------------JWT MIDDLEWARE--------------
 TreeRouter.use(jwtMiddleware);
 
+// CONNECT PERSON TO USER ROUTE
+TreeRouter.post('/connect-person/:userId', async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { gUserID } = req;
+    const { nodeId } = req.body;
+    const result = await TreeService.requestConnectPersonToUser(gUserID, userId, nodeId);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+TreeRouter.patch('/accept-connection-request/:nodeId', async (req, res, next) => {
+  try {
+    const { nodeId } = req.params;
+    const { gUserID } = req;
+    const result = await TreeService.acceptConnectionRequest(gUserID, nodeId);
+    console.log("RESULT", result);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // ADD CHILD ROUTE
 TreeRouter.post('/add-child', async (req, res, next) => {
   try {
@@ -71,6 +96,8 @@ TreeRouter.post('/add-parent', async (req, res, next) => {
     const { nodeId, parentDetails } = req.body;
     const treeId = req.headers['x-tree-id'];
 
+    const { gUserID } = req;
+
     if (!treeId || !nodeId || !parentDetails) {
       return { status: 400, message: 'Invalid request parameters' };
     }
@@ -79,7 +106,7 @@ TreeRouter.post('/add-parent', async (req, res, next) => {
       return { status: 400, message: 'Tree ID is required' };
     }
 
-    const result = await TreeService.addParent(treeId, nodeId, parentDetails);
+    const result = await TreeService.addParent(treeId, nodeId, parentDetails, gUserID);
     return res.status(result.status).json(result);
   } catch (error) {
     next(error);

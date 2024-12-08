@@ -11,9 +11,86 @@ class TreeService {
     return { status: 200, message: 'Family tree retrieved successfully', familyTree };
   }
 
+  static async requestConnectPersonToUser(gUserID, userId, nodeId) {
+    try {
+      const sender = await UserRepository.populatePersonFields(gUserID);
+      console.log("SENDER", sender);
+      await Notification.create({
+        recipient: userId, 
+        message: `${sender.person.generalInformation.firstName} ${sender.person.generalInformation.lastName} wants to connect with you on Ancestree!`,
+        type: 'CONNECT',
+        relatedId: nodeId 
+      });
+      return { 
+        status: 200, 
+        message: 'Connection request sent successfully', 
+      };
+    } catch (error) {
+      console.error('Error in connectPersonToUser:', error);
+      return { status: 500, message: 'Internal Server Error' };
+    }
+  }
+
+  static async acceptConnectionRequest(userId, nodeId) {
+    try {
+      const userAccepter = await UserRepository.populatePersonFields(userId);
+      if (!userAccepter) {
+        return { status: 404, message: 'User not found' };
+      }
+
+      const personNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person']);
+      if (!personNode) {
+        return { status: 404, message: 'Person node not found' };
+      }
+
+      const person = await PersonRepository.findOrCreatePerson(personNode.person);
+      if (!person) {
+        return { status: 404, message: 'Person not found' };
+      }
+
+      const familyTree = await FamilyTreeRepository.getFamilyTreeById(person.treeId);
+      if (!familyTree) {
+        return { status: 404, message: 'Family tree not found' };
+      }
+
+      const user = await UserRepository.populatePersonFields(familyTree.owner);
+      if (!user) {
+        return { status: 404, message: 'User not found' };
+      }
+
+      const notificationAccept = await Notification.create({
+        recipient: userId, 
+        message: `You are now connected with ${user.person.generalInformation.firstName} ${user.person.generalInformation.lastName} on Ancestree!`,
+        type: 'GENERAL',
+        relatedId: user._id 
+      });
+
+      const notificationSender = await Notification.create({
+        recipient: user._id, 
+        message: `You are now connected with ${person.generalInformation.firstName} ${person.generalInformation.lastName} on Ancestree!`,
+        type: 'GENERAL',
+        relatedId: userId
+      });
+      person.relatedUser = userId;
+
+      console.log("PERSON", person);
+
+      await notificationAccept.save();
+      await notificationSender.save();
+      await person.save();
+
+      return { 
+        status: 200, 
+        message: 'Connection request accepted successfully', 
+      };
+    } catch (error) {
+      console.error('Error in connectPersonToUser:', error);
+      return { status: 500, message: 'Internal Server Error' };
+    }
+  }
+
   static async updateNode(nodeId, updatedDetails) {
     try {
-      
       const updatedNode = await PersonNodeRepository.updatePersonNode(nodeId, updatedDetails);  
       return { status: 200, message: 'Node updated successfully', updatedNode };
     } catch (error) {
@@ -109,7 +186,7 @@ class TreeService {
     }
   }
 
-  static async addParent(treeId, nodeId, parentDetails) {
+  static async addParent(treeId, nodeId, parentDetails, gUserID) {
 
     try {
       parentDetails.treeId = treeId;
@@ -126,9 +203,7 @@ class TreeService {
       if (childNode.parents.length >= 2) {
         return { status: 400, message: 'Cannot add more than two parents' };
       }
-      console.log("PARENT DETAILS", parentDetails); 
       let parentPerson = await PersonRepository.findOrCreatePerson(parentDetails);
-      console.log("PARENT PERSON", parentPerson);
       let parentNode = await PersonNodeRepository.getPersonNodeByPersonId(parentPerson._id, ['person', 'children']);
 
       if (!parentNode) {
@@ -151,12 +226,33 @@ class TreeService {
 
       if (potentialMatch.length > 0) {
           
+        const notificationPromises = [];
+
+        notificationPromises.push(
+          Notification.create({
+            recipient: gUserID, 
+            message: `A potential match was found on another user's tree.`,
+            type: 'MATCH',
+            relatedId: parentNode._id 
+          })
+        );
+
+        potentialMatch.forEach(match => {
+          notificationPromises.push(
+            Notification.create({
+              recipient: match.userData.userId, 
+              message: 'A potential match was found in your family tree!',
+              type: 'MATCH',
+              relatedId: match.personData.personId 
+            })
+          );
+        });
+
+        await Promise.all(notificationPromises);
 
         return {
           status: 200,
           message: 'Parent added successfully. Potential match found in another user\'s tree.',
-          // parentNode,
-          // childNode,
           potentialMatch
         };
       }

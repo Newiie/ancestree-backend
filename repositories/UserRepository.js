@@ -9,6 +9,17 @@ class UserRepository {
     return await user.save();
   }
 
+  static async populatePersonFields(userId) {
+    const user = await User.findById(userId)
+      .populate({
+        path: 'person',
+        populate: {
+          path: 'generalInformation',
+        }
+      });
+    return user;
+  }
+
   static async getFriendsFields(userId) {
     const user = await User.findById(userId, 'friendRequest friends')
       .populate({

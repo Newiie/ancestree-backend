@@ -63,7 +63,14 @@ X-Tree-Id: 67264b79696ae60bd7847be4
     "destinationId": "67264ee5f00892aa2bf642e6"
 }
 
+### CONNECT PERSON TO USER
+POST http://localhost:3001/api/trees/connect-person/67505cab647bcedce662de80
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1lb3dlcnoiLCJpZCI6IjY3NTI5MDhiZjlkZWRkNGU2M2Q1NGQ2MSIsImlhdCI6MTczMzY3NTA1OCwiZXhwIjoxNzMzNzYxNDU4fQ.awOvejZiB6XWAjm_T9IET2hDAk1fy2tTrVop0TuBIgE
 
+{
+    "nodeId": "675481914497c04a77606172"
+}
 
 ### GET TREE   
 GET http://localhost:3001/api/trees/family-tree/6752908bf9dedd4e63d54d61

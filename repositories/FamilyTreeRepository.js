@@ -39,27 +39,33 @@ class FamilyTreeRepository {
     // Reusable population config for 'person'
     const personPopulation = {
       path: 'person',
-      select: '-address -interests -vitalInformation -emergencyContact -aboutMe -quotes',
+      select: '-address -interests -emergencyContact -aboutMe -quotes',
     };
   
     // Recursive population config for 'children' and 'parents'
-    const populateRelations = (depth = 4) => {
+    const populateRelations = (depth = 8) => {
       if (depth === 0) return [];
       return [
         {
           path: 'children',
           populate: [
-            ...populateRelations(depth - 1), // Recursively populate children
-            personPopulation, // Populate 'person'
+            ...populateRelations(depth - 1),
+            personPopulation, 
           ],
         },
-        personPopulation, // Populate 'person' at this level
+        {
+          path: 'parents',
+          populate: [
+            personPopulation
+          ],
+        },
+        personPopulation, 
       ];
     };
   
     return await FamilyTree.findOne({ owner: userId }).populate({
       path: 'root',
-      populate: populateRelations(5), // Adjust depth as needed
+      populate: populateRelations(8), 
     });
   }
 

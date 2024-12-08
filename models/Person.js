@@ -15,7 +15,7 @@ const PersonSchema = new mongoose.Schema({
     nationality: {
       type: [String]
     },
-    civilStatus: String,
+    status: String,
  
   },
   address: {
