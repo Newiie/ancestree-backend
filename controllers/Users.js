@@ -3,7 +3,21 @@ const express = require('express');
 const UserService = require('../services/UserService');
 const logger = require('../utils/logger');
 const { jwtMiddleware } = require('../utils/middleware');
+
+// SERVICES
+const FriendService = require('../services/FriendService');
+const NotificationService = require('../services/NotificationService');
+
 const UsersRouter = express.Router();
+
+UsersRouter.get('/', async (request, response, next) => {
+  try {
+    const users = await UserService.getAllUsersWithRelations();
+    response.json(users);
+  } catch (error) {
+    next(error);
+  }
+});
 
 UsersRouter.post('/', async (request, response, next) => {
   const { firstName, lastName, username, password } = request.body;
@@ -17,21 +31,12 @@ UsersRouter.post('/', async (request, response, next) => {
   }
 });
 
-UsersRouter.get('/friends-list/:userId', async (request, response, next) => {
-  try { 
-    const { userId } = request.params;
-    const user = await UserService.getUserFriendsField(userId);
-    response.json(user);
-  } catch (error) {
-    next(error);
-  }
-});
 
+// NOTIFICATIONS
 UsersRouter.get('/notifications/', jwtMiddleware, async (request, response, next) => {
   try { 
     const { gUserID } = request;
-    const notifications = await UserService.getUserNotifications(gUserID, false);
-    console.log(notifications);
+    const notifications = await NotificationService.getUserNotifications(gUserID, false);
     response.json(notifications);
   } catch (error) {
     next(error);
@@ -41,17 +46,28 @@ UsersRouter.get('/notifications/', jwtMiddleware, async (request, response, next
 UsersRouter.patch('/read-notification/:notificationId', jwtMiddleware, async (request, response, next) => {
   try { 
     const { notificationId } = request.params;
-    const user = await UserService.markNotificationAsRead(notificationId);
-    response.json(user);
+    const notification = await NotificationService.markNotificationAsRead(notificationId);
+    response.status(200).json({ 
+      message: 'Notification marked as read',
+      notification 
+    });
   } catch (error) {
-    next(error);
+    if (error.message === 'Notification not found') {
+      response.status(404).json({ error: error.message });
+    } else {
+      next(error);
+    }
   }
 });
 
-UsersRouter.get('/', async (request, response, next) => {
-  try {
-    const users = await UserService.getAllUsersWithRelations();
-    response.json(users);
+
+
+// FRIENDS ROUTES
+UsersRouter.get('/friends-list/:userId', async (request, response, next) => {
+  try { 
+    const { userId } = request.params;
+    const user = await FriendService.getFriends(userId);
+    response.json(user);
   } catch (error) {
     next(error);
   }
@@ -61,9 +77,7 @@ UsersRouter.post('/send-friend-request/:friendId', jwtMiddleware, async (request
   try {
     const { friendId } = request.params;
     const { gUserID } = request;
-    console.log("G USER ID", gUserID);
-    console.log("FRIEND ID", friendId);
-    await UserService.sendFriendRequest(gUserID, friendId);
+    await FriendService.sendFriendRequest(gUserID, friendId);
     response.status(200).json({ message: "User added successfully!" });
   } catch (error) {
     next(error);
@@ -74,9 +88,7 @@ UsersRouter.post('/cancel-friend-request/:friendId', jwtMiddleware, async (reque
   try {
     const { friendId } = request.params;
     const { gUserID } = request;
-    console.log("G USER ID", gUserID);
-    console.log("FRIEND ID", friendId);
-    await UserService.cancelFriendRequest(gUserID, friendId);
+    await FriendService.cancelFriendRequest(gUserID, friendId);
     response.status(200).json({ message: "User added successfully!" });
   } catch (error) {
     next(error);
@@ -90,7 +102,7 @@ UsersRouter.post('/accept-friend-request/:friendId', jwtMiddleware, async (reque
 
     console.log("FRIEND ID", friendId);
     console.log("G USER ID", gUserID);
-    await UserService.acceptFriendRequest(gUserID, friendId);
+    await FriendService.acceptFriendRequest(gUserID, friendId);
     response.status(200).json({ message: "User added successfully!" });
   } catch (error) {
     next(error);

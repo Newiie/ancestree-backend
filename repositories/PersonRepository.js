@@ -9,6 +9,10 @@ class PersonRepository {
     return await person.save();
   }
 
+  static async setFamilyTree(personId, familyTreeId) {
+    return await Person.findByIdAndUpdate(personId, { $set: { treeId: familyTreeId } }, { new: true });
+  }
+
   static async findPersonRelationship(personDetails) {
     console.log("FIND SIMILAR PERSONS ", personDetails);
     const { firstName, middleName, lastName, birthdate } = personDetails;
@@ -86,8 +90,6 @@ class PersonRepository {
         lastName 
       }
     } = personDetails;
-    console.log("PERSON DETAILS REPOSITORY", personDetails);
-    // Find an exact match for generalInformation (debugging purposes)
     const exactMatch = await Person.findOne({
       'generalInformation.firstName': firstName,
       'generalInformation.lastName': lastName
@@ -97,8 +99,7 @@ class PersonRepository {
     if (!firstName || !lastName) {
       throw new Error('First name and last name are required.');
     }
-  
-    // Find similar matches using regex for case-insensitive matching
+
     return await Person.find({
       'generalInformation.firstName': { $regex: new RegExp(firstName, 'i') },
       'generalInformation.lastName': { $regex: new RegExp(lastName, 'i') }
@@ -115,12 +116,10 @@ class PersonRepository {
   }
 
   static async updatePersonGeneralInformation(personId, generalInfo) {
-    console.log("GENERAL INFO", generalInfo)
     const update = Object.keys(generalInfo).reduce((acc, key) => {
         acc[`generalInformation.${key}`] = generalInfo[key];
         return acc;
     }, {});
-    console.log("UPDATE", update)
     return await Person.findByIdAndUpdate(personId, { $set: update }, { new: true });
   }
 

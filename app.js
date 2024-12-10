@@ -7,6 +7,7 @@ const Person = require('./models/Person');
 const PersonNode = require('./models/PersonNode');
 const FamilyTree = require('./models/FamilyTree');
 const User = require('./models/User');
+const Notification = require('./models/Notification');
 
 // ROUTER REFERENCE
 const usersRouter = require('./controllers/Users')
@@ -42,6 +43,7 @@ const reset = async () => {
     await FamilyTree.deleteMany({});
     await Person.deleteMany({});
     await PersonNode.deleteMany({});
+    await Notification.deleteMany({});
     console.log('reset done')
   }
   await resetFunction();

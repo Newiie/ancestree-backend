@@ -6,6 +6,19 @@ const { isValidObjectId } = require('../utils/helper');
 
 class PersonService {
 
+    static async createPerson(personDetails) {
+        const person = await PersonRepository.createPerson(personDetails);
+        return person;
+    }
+
+    static async setFamilyTree(personId, familyTreeId) {
+        if (!isValidObjectId(personId) || !isValidObjectId(familyTreeId)) {
+            throw new Error('Invalid Person or Family Tree ID');
+        }
+        const person = await PersonRepository.setFamilyTree(personId, familyTreeId);
+        return person;
+    }
+
     static async findPersons(personDetails) {
         try{
             console.log("PERSON DETAILS SERVICE", personDetails)

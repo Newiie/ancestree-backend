@@ -9,6 +9,22 @@ class PersonNodeRepository {
     return mongoose.Types.ObjectId.isValid(id);
   }
 
+  static async setFamilyTree(id, familyTreeId) {
+    if (!this.isValidObjectId(id)) {
+      throw new InvalidObjectIdError('Invalid PersonNode ID');
+    }
+  
+    const personNode = await PersonNode.findById(id);
+    if (!personNode) {
+      throw new NotFoundError('PersonNode not found');
+    }
+  
+    personNode.familyTree = familyTreeId;
+    await personNode.save();
+  
+    return personNode;
+  }
+
   static async updatePersonNode(id, data) {
     if (!this.isValidObjectId(id)) {
       throw new InvalidObjectIdError('Invalid PersonNode ID');

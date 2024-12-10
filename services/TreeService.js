@@ -6,104 +6,103 @@ const Notification = require('../models/Notification');
 
 class TreeService {
 
+  static async createFamilyTree(userId) {
+    const familyTree = await FamilyTreeRepository.createFamilyTree({ owner: userId });
+    return familyTree;
+  }
+
+  static async addRoot(familyTreeId, nodeId) {
+    const familyTree = await FamilyTreeRepository.updateFamilyTreeRoot(familyTreeId, nodeId);
+    return familyTree;
+  }
+
   static async getTree(userId) {
     const familyTree = await FamilyTreeRepository.getFamilyTreeByUserId(userId);
-    return { status: 200, message: 'Family tree retrieved successfully', familyTree };
+    if (!familyTree) {
+      throw new Error('Family tree not found');
+    }
+    return familyTree;
   }
 
   static async requestConnectPersonToUser(gUserID, userId, nodeId) {
-    try {
-      const sender = await UserRepository.populatePersonFields(gUserID);
-      console.log("SENDER", sender);
-      await Notification.create({
-        recipient: userId, 
-        message: `${sender.person.generalInformation.firstName} ${sender.person.generalInformation.lastName} wants to connect with you on Ancestree!`,
-        type: 'CONNECT',
-        relatedId: nodeId 
-      });
-      return { 
-        status: 200, 
-        message: 'Connection request sent successfully', 
-      };
-    } catch (error) {
-      console.error('Error in connectPersonToUser:', error);
-      return { status: 500, message: 'Internal Server Error' };
+    const sender = await UserRepository.populatePersonFields(gUserID);
+    if (!sender) {
+      throw new Error('Sender not found');
     }
+
+    await Notification.create({
+      recipient: userId, 
+      message: `${sender.person.generalInformation.firstName} ${sender.person.generalInformation.lastName} wants to connect with you on Ancestree!`,
+      type: 'CONNECT',
+      relatedId: nodeId 
+    });
+    
+    return { message: 'Connection request sent successfully' };
   }
 
   static async acceptConnectionRequest(userId, nodeId) {
-    try {
-      const userAccepter = await UserRepository.populatePersonFields(userId);
-      if (!userAccepter) {
-        return { status: 404, message: 'User not found' };
-      }
-
-      const personNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person']);
-      if (!personNode) {
-        return { status: 404, message: 'Person node not found' };
-      }
-
-      const person = await PersonRepository.findOrCreatePerson(personNode.person);
-      if (!person) {
-        return { status: 404, message: 'Person not found' };
-      }
-
-      const familyTree = await FamilyTreeRepository.getFamilyTreeById(person.treeId);
-      if (!familyTree) {
-        return { status: 404, message: 'Family tree not found' };
-      }
-
-      const user = await UserRepository.populatePersonFields(familyTree.owner);
-      if (!user) {
-        return { status: 404, message: 'User not found' };
-      }
-
-      const notificationAccept = await Notification.create({
-        recipient: userId, 
-        message: `You are now connected with ${user.person.generalInformation.firstName} ${user.person.generalInformation.lastName} on Ancestree!`,
-        type: 'GENERAL',
-        relatedId: user._id 
-      });
-
-      const notificationSender = await Notification.create({
-        recipient: user._id, 
-        message: `You are now connected with ${person.generalInformation.firstName} ${person.generalInformation.lastName} on Ancestree!`,
-        type: 'GENERAL',
-        relatedId: userId
-      });
-      person.relatedUser = userId;
-
-      console.log("PERSON", person);
-
-      await notificationAccept.save();
-      await notificationSender.save();
-      await person.save();
-
-      return { 
-        status: 200, 
-        message: 'Connection request accepted successfully', 
-      };
-    } catch (error) {
-      console.error('Error in connectPersonToUser:', error);
-      return { status: 500, message: 'Internal Server Error' };
+    const userAccepter = await UserRepository.populatePersonFields(userId);
+    if (!userAccepter) {
+      throw new Error('User not found');
     }
+
+    const personNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person']);
+    if (!personNode) {
+      throw new Error('Person node not found');
+    }
+
+    const person = await PersonRepository.findOrCreatePerson(personNode.person);
+    if (!person) {
+      throw new Error('Person not found');
+    }
+
+    const familyTree = await FamilyTreeRepository.getFamilyTreeById(person.treeId);
+    if (!familyTree) {
+      throw new Error('Family tree not found');
+    }
+
+    const user = await UserRepository.populatePersonFields(familyTree.owner);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    await Notification.create({
+      recipient: userId, 
+      message: `You are now connected with ${user.person.generalInformation.firstName} ${user.person.generalInformation.lastName} on Ancestree!`,
+      type: 'GENERAL',
+      relatedId: user._id 
+    });
+
+    await Notification.create({
+      recipient: user._id, 
+      message: `You are now connected with ${person.generalInformation.firstName} ${person.generalInformation.lastName} on Ancestree!`,
+      type: 'GENERAL',
+      relatedId: userId
+    });
+    
+    person.relatedUser = userId;
+    await person.save();
+
+    return { message: 'Connection request accepted successfully' };
   }
 
   static async updateNode(nodeId, updatedDetails) {
     try {
       const updatedNode = await PersonNodeRepository.updatePersonNode(nodeId, updatedDetails);  
-      return { status: 200, message: 'Node updated successfully', updatedNode };
+      return { message: 'Node updated successfully', updatedNode };
     } catch (error) {
       console.error('Error in updateNode:', error); 
+      throw error;
     }
   }
 
   static async deleteNode(nodeId) {
     try {
       const deletedNode = await PersonNodeRepository.deletePersonNode(nodeId);
-      return { status: 200, message: 'Node deleted successfully', deletedNode };
+      return { message: 'Node deleted successfully', deletedNode };
     } catch (error) {
       console.error('Error in deleteNode:', error); 
+      throw error;
     }
   }
 
@@ -112,12 +111,12 @@ class TreeService {
       childDetails.treeId = treeId;
       const familyTree = await FamilyTreeRepository.getFamilyTreeById(treeId);
       if (!familyTree) {
-        return { status: 404, message: 'Family tree not found' };
+        throw new Error('Family tree not found');
       }
 
       const parentNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person', 'children', 'parents']);
       if (!parentNode) {
-        return { status: 404, message: 'Parent node not found' };
+        throw new Error('Parent node not found');
       }
 
       let childPerson = await PersonRepository.findOrCreatePerson(childDetails);
@@ -169,20 +168,16 @@ class TreeService {
         // Execute all notification promises
         await Promise.all(notificationPromises);
 
-
         return {
-          status: 200,
           message: 'Child added successfully. Potential match found in another user\'s tree.',
-          // parentNode,
-          // childNode,
           potentialMatch
         };
       }
 
-      return { status: 200, message: 'Child added successfully', parentNode, childNode };
+      return { message: 'Child added successfully', parentNode, childNode };
     } catch (error) {
       console.error('Error in addChild:', error);
-      return { status: 500, message: 'Internal Server Error' };
+      throw error;
     }
   }
 
@@ -192,16 +187,16 @@ class TreeService {
       parentDetails.treeId = treeId;
       const familyTree = await FamilyTreeRepository.getFamilyTreeById(treeId);
       if (!familyTree) {
-        return { status: 404, message: 'Family tree not found' };
+        throw new Error('Family tree not found');
       }
 
       const childNode = await PersonNodeRepository.getPersonNodeById(nodeId, ['person', 'parents']);
       if (!childNode) {
-        return { status: 404, message: 'Child node not found' };
+        throw new Error('Child node not found');
       }
 
       if (childNode.parents.length >= 2) {
-        return { status: 400, message: 'Cannot add more than two parents' };
+        throw new Error('Cannot add more than two parents');
       }
       let parentPerson = await PersonRepository.findOrCreatePerson(parentDetails);
       let parentNode = await PersonNodeRepository.getPersonNodeByPersonId(parentPerson._id, ['person', 'children']);
@@ -251,16 +246,15 @@ class TreeService {
         await Promise.all(notificationPromises);
 
         return {
-          status: 200,
           message: 'Parent added successfully. Potential match found in another user\'s tree.',
           potentialMatch
         };
       }
 
-      return { status: 200, message: 'Parent added successfully', parentNode, childNode };
+      return { message: 'Parent added successfully', parentNode, childNode };
     } catch (error) {
       console.error('Error in addParent:', error);
-      return { status: 500, message: 'Internal Server Error' };
+      throw error;
     }
   }
 
@@ -268,22 +262,22 @@ class TreeService {
     try {
 
       if (!referenceId || !destinationId) {
-        return { status: 400, message: 'Invalid request parameters' };
+        throw new Error('Invalid request parameters');
       }
       
       const referenceNode = await PersonNodeRepository.getPersonNodeById(referenceId, ['person', 'parents', 'children']);
       const destinationNode = await PersonNodeRepository.getPersonNodeById(destinationId, ['person', 'parents', 'children']);
       
       if (!referenceNode || !destinationNode) {
-        return { status: 404, message: 'Node(s) not found' };
+        throw new Error('Node(s) not found');
       }
 
       // Logic to determine relationship
       const relationshipType = await this.determineRelationship(referenceNode, destinationNode);
-      return { status: 200, message: 'Relationship determined successfully', relationshipType };
+      return { message: 'Relationship determined successfully', relationshipType };
     } catch (error) {
       console.error('Error in checkRelationship:', error);
-      return { status: 500, message: 'Internal Server Error' };
+      throw error;
     }
   }
 
@@ -329,8 +323,6 @@ class TreeService {
             }
           };
 
-          console.log('Potential match:', potentialMatch);
-          // Check if this person is already in potentialMatches
           const isDuplicate = potentialMatches.some(match => 
             match.personData.personId.toString() === potentialMatch.personData.personId.toString() &&
             match.personData.treeId.toString() === potentialMatch.personData.treeId.toString()
@@ -347,11 +339,8 @@ class TreeService {
   }
 
   static async findSimilarPersonInTree(treeId, personDetails) {
-    const { name, birthdate, deathdate } = personDetails;
-    console.log("PERSON DETAILS SERVICE", personDetails)
     const similarPersons = await PersonRepository.findSimilarPersons(personDetails);
 
-    console.log('SIMILAR PERSONS IN TREE', similarPersons);
     const filteredPersons = similarPersons.filter(person => person.treeId && person.treeId.toString() !== treeId);
     return filteredPersons;
   }
@@ -442,7 +431,7 @@ class TreeService {
       if (removalDegree > 0) {
         relationshipType += ` ${removalDegree} times removed`;
       }
-      return { status: 200, message: 'Cousin found', relationshipType, cousinDegree, removalDegree };
+      return { message: 'Cousin found', relationshipType, cousinDegree, removalDegree };
     }
 
     return false;
@@ -462,23 +451,19 @@ class TreeService {
   static async findUncleAuntOrNephewNiece(node1, node2) {
     for (const parent of node1.parents) {
       const parentNode = await PersonNodeRepository.getPersonNodeById(parent._id || parent, ['children', 'parents', 'person']);
-      // console.log("PARENT NODE", parentNode);
-      // console.log("NODE 2 NODE", node2);
 
       // Re-run the sibling check after fixing possible data issues
       const isSibling = this.areSiblings(parentNode, node2);
-      // console.log("ISH SIBLING", isSibling)
-      if (isSibling) return { status: 200, message: 'Uncle/Aunt found', relationshipType: 'uncle/aunt' };
+      if (isSibling) return { message: 'Uncle/Aunt found', relationshipType: 'uncle/aunt' };
 
       const isUncleAunt = await this.isDescendant(node2._id, parentNode, 2);
-      if (isUncleAunt) return { status: 200, message: 'Nephew/Niece found', relationshipType: 'nephew/niece' };
+      if (isUncleAunt) return { message: 'Nephew/Niece found', relationshipType: 'nephew/niece' };
     }
 
     return false;
   }
 
   static async isDescendant(descendantId, node, generation = 1, path = []) {
-    // console.log("DES ID ", descendantId.toString(), "NODE ID", node._id.toString());
 
     path.push({
       nodeId: node._id.toString(),
@@ -487,19 +472,16 @@ class TreeService {
     });
 
     if (node._id.toString() === descendantId.toString()) {
-      // console.log(`Descendant found: ${node.person.name} at generation ${generation}. Path:`, path);
       return generation - 1;
     }
 
     if (node.children.length === 0) {
-      // console.log(`No children found at generation ${generation}. Current path:`, path);
       return false;
     }
 
     // Recursively check each child
     for (const child of node.children) {
       const fullChildNode = await PersonNodeRepository.getPersonNodeById(child._id || child, ['children', 'person']);
-      // console.log(`Visiting child: ${fullChildNode.person.name} at generation ${generation + 1}. Current path:`, path);
 
       const descendantGeneration = await this.isDescendant(descendantId, fullChildNode, generation + 1, [...path]);
       if (descendantGeneration) {
@@ -507,8 +489,6 @@ class TreeService {
       }
     }
 
-    // console.log(`Backtracking from node: ${node.person.name} at generation ${generation}. Current path:`, path);
-    // return false;
   }
 
   static async determineRelationship(referenceNode, destinationNode) {
@@ -542,7 +522,7 @@ class TreeService {
       return relationshipType;
     } catch (error) {
       console.error('Error in determineRelationship:', error);
-      return { status: 500, message: 'Internal Server Error' };
+      throw error;
     }
   }
 }

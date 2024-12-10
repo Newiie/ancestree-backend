@@ -9,6 +9,18 @@ class UserRepository {
     return await user.save();
   }
 
+  static async setFamilyTree(userId, familyTreeId) {
+    const user = await User.findById(userId);
+    user.familyTree = familyTreeId;
+    return await user.save();
+  }
+
+  static async setPerson(userId, personId) {
+    const user = await User.findById(userId);
+    user.person = personId;
+    return await user.save();
+  }
+
   static async populatePersonFields(userId) {
     const user = await User.findById(userId)
       .populate({
@@ -46,7 +58,7 @@ class UserRepository {
     console.log('Formatted friends:', formattedFriends);
 
     return { friendRequest, friends: formattedFriends };
-}
+  }
 
   static async findUserByUsername(username) {
     return await User.findOne({ username }).exec();

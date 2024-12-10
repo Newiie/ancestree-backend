@@ -3,6 +3,7 @@ const FamilyTree = require('../models/FamilyTree');
 const { InvalidObjectIdError, NotFoundError } = require('../utils/customErrors');
 
 class FamilyTreeRepository {
+  
   static isValidObjectId(id) {
     return mongoose.Types.ObjectId.isValid(id);
   }
