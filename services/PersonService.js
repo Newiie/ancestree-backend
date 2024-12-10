@@ -20,13 +20,8 @@ class PersonService {
     }
 
     static async findPersons(personDetails) {
-        try{
-            console.log("PERSON DETAILS SERVICE", personDetails)
-            const person = await PersonRepository.findPersonRelationship(personDetails);
-            return person;
-        } catch (error) {
-            console.error("Error ", error);
-        }
+        const person = await PersonRepository.findPersonRelationship(personDetails);
+        return person;
     }
 
     static async getPersonByUserId(userId) {

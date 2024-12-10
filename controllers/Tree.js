@@ -69,6 +69,7 @@ TreeRouter.post('/add-child', async (req, res, next) => {
     }
 
     const result = await TreeService.addChild(treeId, nodeId, childDetails, gUserID);
+    console.log(result);
     res.status(200).json(result);
   } catch (error) {
     if (error.message.includes('not found')) {
