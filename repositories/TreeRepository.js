@@ -88,7 +88,7 @@ const addChildToNode = async (node, childId) => {
   }
 };
 
-const findOrCreatePerson = async (personDetails) => {
+const createPerson = async (personDetails) => {
   let person = await Person.findOne(personDetails);
   if (!person) {
     person = await Person.create(personDetails);
@@ -104,5 +104,5 @@ module.exports = {
   getPersonNodeByPersonId,
   getFamilyTreeByUserId,
   findPersonInTree,
-  findOrCreatePerson,
+  createPerson,
 };

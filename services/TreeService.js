@@ -85,7 +85,7 @@ class TreeService {
             throw new Error('Person node not found');
         }
 
-        const person = await PersonRepository.findOrCreatePerson(personNode.person);
+        const person = await PersonRepository.createPerson(personNode.person);
         if (!person) {
             throw new Error('Person not found');
         }
@@ -131,7 +131,7 @@ class TreeService {
                 throw new Error('Parent node not found');
             }
 
-            let childPerson = await PersonRepository.findOrCreatePerson(childDetails);
+            let childPerson = await PersonRepository.createPerson(childDetails);
             let childNode = await PersonNodeRepository.getPersonNodeByPersonId(childPerson._id, ['person', 'parents']);
 
             if (!childNode) {
@@ -181,7 +181,7 @@ class TreeService {
                 throw new Error('Cannot add more than two parents');
             }
 
-            let parentPerson = await PersonRepository.findOrCreatePerson(parentDetails);
+            let parentPerson = await PersonRepository.createPerson(parentDetails);
             let parentNode = await PersonNodeRepository.getPersonNodeByPersonId(parentPerson._id, ['person', 'children']);
 
             if (!parentNode) {

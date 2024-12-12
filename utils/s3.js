@@ -3,9 +3,15 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const crypto = require('crypto');
 
 const uniqueFileName = (fileName) => {
-    const hash = crypto.createHash('sha256').update(fileName).digest('hex');
-    return hash;
-};
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 15);
+  const fileExtension = fileName.split('.').pop();
+  const hash = crypto.createHash('sha256')
+      .update(`${fileName}-${timestamp}-${random}`)
+      .digest('hex')
+      .substring(0, 16);
+  return `${hash}-${timestamp}.${fileExtension}`;
+}
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -25,7 +31,7 @@ const getUrlImage = async (fileName) => {
   });
 };
 
-const uploadToS3 = async (file, fileName, user) => {
+const uploadToS3 = async (file, fileName) => {
   const newFileName = uniqueFileName(fileName);
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,

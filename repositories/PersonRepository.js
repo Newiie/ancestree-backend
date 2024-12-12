@@ -77,14 +77,6 @@ class PersonRepository {
     return await Person.findByIdAndUpdate(personId, { $set: update }, { new: true });
   }
 
-  static async findOrCreatePerson(personDetails) {
-    let person = await Person.findOne(personDetails);
-    if (!person) {
-      person = await this.createPerson(personDetails);
-    }
-    return person;
-  }
-
   static async findSimilarPersons(personDetails) {
     const { 
       generalInformation: { 
