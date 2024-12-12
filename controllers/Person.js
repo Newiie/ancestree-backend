@@ -7,6 +7,7 @@ const { profileJwtMiddleware } = require('../utils/middleware');
 // PersonRouter.use(jwtMiddleware);
 const { isValidObjectId } = require('../utils/helper');
 const { upload } = require('../utils/helper');
+const ImageService = require('../services/ImageService');
 
 PersonRouter.get('/find-person', async (req, res, next) => {
     try { 
@@ -36,11 +37,20 @@ PersonRouter.get('/:userId', async (req, res, next) => {
         }
 
         const person = await PersonService.getPersonByUserId(userId);
+        if (person.profilePicture != null) {
+            const getProfilePicture = await ImageService.getImageUrl(person.profilePicture);
+            person.profilePicture = getProfilePicture;
+        }
+
+        if (person.backgroundPicture != null) {
+            const getBackgroundPicture = await ImageService.getImageUrl(person.backgroundPicture);
+            person.backgroundPicture = getBackgroundPicture;
+        }
+
         const friendsList = await UserRepository.getFriendsFields(userId);
 
         person.friendsList = friendsList.friends;
         person.friendRequestList = friendsList.friendRequest;
-        console.log("PERSON", person);
         res.json(person);
     } catch (error) {
         next(error);

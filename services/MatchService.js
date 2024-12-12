@@ -2,7 +2,7 @@ const PersonNodeRepository = require('../repositories/PersonNodeRepository');
 const PersonRepository = require('../repositories/PersonRepository');
 const UserRepository = require('../repositories/UserRepository');
 const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
-const Notification = require('../models/Notification');
+const NotificationService = require('./NotificationService');
 
 class MatchService {
     static async checkForPotentialMatch(personDetails, newNode, userTreeId) {
@@ -91,23 +91,13 @@ class MatchService {
 
         // Notify the user adding the person
         notificationPromises.push(
-            Notification.create({
-                recipient: gUserID, 
-                message: `A potential match was found on another user's tree.`,
-                type: 'MATCH',
-                relatedId: newNode._id 
-            })
+            NotificationService.createNotification(gUserID, 'A potential match was found on another user\'s tree.', 'MATCH', newNode._id )
         );
 
         // Notify all potential matches
         potentialMatches.forEach(match => {
             notificationPromises.push(
-                Notification.create({
-                    recipient: match.userData.userId, 
-                    message: 'A potential match was found in your family tree!',
-                    type: 'MATCH',
-                    relatedId: match.personData.personId 
-                })
+                NotificationService.createNotification(match.userData.userId, 'A potential match was found in your family tree!', 'MATCH', match.personData.personId )
             );
         });
 

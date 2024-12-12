@@ -63,7 +63,9 @@ class PersonRepository {
     return Array.from(resultSet.values());
   }
   
-  
+  static async updateRelatedUser(personId, userId) {
+    return await Person.findByIdAndUpdate(personId, { $set: { relatedUser: userId } }, { new: true });
+  }
 
   static async getUserRelations(userId) {
     return await Person.find({ relatedUser: userId })

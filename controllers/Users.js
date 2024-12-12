@@ -109,4 +109,16 @@ UsersRouter.post('/accept-friend-request/:friendId', jwtMiddleware, async (reque
   }  
 });
 
+
+UsersRouter.post('/remove-friend-request/:friendId', jwtMiddleware, async (request, response, next) => { 
+  try {
+    const { friendId } = request.params;
+    const { gUserID } = request;
+    await FriendService.removeFriendRequest(gUserID, friendId);
+    response.status(200).json({ message: "User added successfully!" });
+  } catch (error) {
+    next(error);
+  }  
+});
+
 module.exports = UsersRouter;

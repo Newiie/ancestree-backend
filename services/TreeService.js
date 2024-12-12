@@ -2,9 +2,11 @@ const FamilyTreeRepository = require('../repositories/FamilyTreeRepository');
 const PersonNodeRepository = require('../repositories/PersonNodeRepository');
 const PersonRepository = require('../repositories/PersonRepository');
 const UserRepository = require('../repositories/UserRepository');
-const Notification = require('../models/Notification');
 const RelationshipService = require('./RelationshipService');
 const MatchService = require('./MatchService');
+const NotificationService = require('./NotificationService');
+const PersonNodeService = require('./PersonNodeService');
+const ImageService = require('./ImageService');
 
 class TreeService {
     static async createFamilyTree(userId) {
@@ -19,10 +21,41 @@ class TreeService {
 
     static async getTree(userId) {
         const familyTree = await FamilyTreeRepository.getFamilyTreeByUserId(userId);
+       
         if (!familyTree) {
             throw new Error('Family tree not found');
         }
+
+        // Transform profile picture filenames to signed URLs
+        await this.transformProfilePictureUrls(familyTree.root);
+
         return familyTree;
+    }
+
+    /**
+     * Recursively transform profile picture filenames to signed URLs
+     * @param {Object} node - The current person node
+     */
+    static async transformProfilePictureUrls(node) {
+        if (!node) return;
+
+        // If node has a person and profile picture, transform the filename to a signed URL
+        if (node.person && node.person.profilePicture) {
+            try {
+                // Replace profilePicture filename with signed URL
+                node.person.profilePicture = await ImageService.getImageUrl(node.person.profilePicture);
+            } catch (error) {
+                console.error(`Error getting signed URL for ${node.person.profilePicture}:`, error);
+                node.person.profilePicture = null;
+            }
+        }
+
+        // Recursively process children
+        if (node.children && node.children.length > 0) {
+            for (const childNode of node.children) {
+                await this.transformProfilePictureUrls(childNode);
+            }
+        }
     }
 
     static async requestConnectPersonToUser(gUserID, userId, nodeId) {
@@ -31,7 +64,7 @@ class TreeService {
             throw new Error('Sender not found');
         }
 
-        await Notification.create({
+        await NotificationService.createNotification({
             recipient: userId, 
             message: `${sender.person.generalInformation.firstName} ${sender.person.generalInformation.lastName} wants to connect with you on Ancestree!`,
             type: 'CONNECT',
@@ -67,44 +100,22 @@ class TreeService {
             throw new Error('User not found');
         }
 
-        await Notification.create({
+        await NotificationService.createNotification({
             recipient: userId, 
             message: `You are now connected with ${user.person.generalInformation.firstName} ${user.person.generalInformation.lastName} on Ancestree!`,
             type: 'GENERAL',
             relatedId: user._id 
         });
 
-        await Notification.create({
+        await NotificationService.createNotification({
             recipient: user._id, 
             message: `You are now connected with ${person.generalInformation.firstName} ${person.generalInformation.lastName} on Ancestree!`,
             type: 'GENERAL',
             relatedId: userId
         });
         
-        person.relatedUser = userId;
-        await person.save();
-
+        await PersonRepository.updateRelatedUser(person._id, userId);
         return { message: 'Connection request accepted successfully' };
-    }
-
-    static async updateNode(nodeId, updatedDetails) {
-        try {
-            const updatedNode = await PersonNodeRepository.updatePersonNode(nodeId, updatedDetails);  
-            return { message: 'Node updated successfully', updatedNode };
-        } catch (error) {
-            console.error('Error in updateNode:', error); 
-            throw error;
-        }
-    }
-
-    static async deleteNode(nodeId) {
-        try {
-            const deletedNode = await PersonNodeRepository.deletePersonNode(nodeId);
-            return { message: 'Node deleted successfully', deletedNode };
-        } catch (error) {
-            console.error('Error in deleteNode:', error); 
-            throw error;
-        }
     }
 
     static async addChild(treeId, nodeId, childDetails, gUserID) {

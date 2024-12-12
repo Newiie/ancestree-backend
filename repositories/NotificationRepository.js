@@ -33,7 +33,7 @@ class NotificationRepository {
     }
 
     static async getUserNotifications(gUserID, isRead = false) {
-        const notifications = await Notification.find({ recipient: gUserID, isRead });
+        const notifications = await Notification.find({ recipient: gUserID });
         return notifications;
     }
 }

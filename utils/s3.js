@@ -26,9 +26,10 @@ const getUrlImage = async (fileName) => {
 };
 
 const uploadToS3 = async (file, fileName, user) => {
+  const newFileName = uniqueFileName(fileName);
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
-    Key: `${user}-${fileName}`,
+    Key: `${newFileName}`,
     Body: file.buffer,
     ContentType: file.mimetype
   };
@@ -37,6 +38,7 @@ const uploadToS3 = async (file, fileName, user) => {
 
   const command = new PutObjectCommand(params);
   await s3.send(command);
+  return newFileName;
 };
 
 module.exports = { uploadToS3, getUrlImage };

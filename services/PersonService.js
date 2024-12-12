@@ -1,8 +1,7 @@
 const PersonRepository = require('../repositories/PersonRepository');
 const UserRepository = require('../repositories/UserRepository');
-const { uploadToS3, getUrlImage } = require('../utils/aws.js');
-
-const { isValidObjectId } = require('../utils/helper');
+const ImageService = require('./ImageService');
+const { isValidObjectId } = require('mongoose');
 
 class PersonService {
 
@@ -47,6 +46,14 @@ class PersonService {
          };
     }
 
+    static async updateRelatedUser(personId, userId) {
+        if (!isValidObjectId(personId) || !isValidObjectId(userId)) {
+            throw new Error('Invalid Person or User ID');
+        }
+        const person = await PersonRepository.updateRelatedUser(personId, userId);
+        return person;
+    }
+
     static async updatePerson(personId, update) {
         if (!isValidObjectId(personId)) {
             throw new Error('Invalid Person ID');
@@ -64,9 +71,7 @@ class PersonService {
         }
 
         const user = await UserRepository.findUserById(userId);
-
-        await uploadToS3(file, "profilePicture", user.username);
-        const imageUrl = await getUrlImage(`${user.username}-profilePicture`);
+        const imageUrl = await ImageService.uploadProfilePicture(file, user.username);
         const person = await PersonRepository.updateProfilePicture(user.person._id, imageUrl);
 
         return person;
@@ -78,13 +83,10 @@ class PersonService {
         }
         const user = await UserRepository.findUserById(userId);
 
-        await uploadToS3(backgroundPicture, "backgroundPicture", user.username);
-        const imageUrl = await getUrlImage(`${user.username}-backgroundPicture`);
-
+        const imageUrl = await ImageService.uploadBackgroundPicture(backgroundPicture, user.username);
         const person = await PersonRepository.updateBackgroundPicture(user.person._id, imageUrl);
         return person;
     }
 }
 
 module.exports = PersonService;
-

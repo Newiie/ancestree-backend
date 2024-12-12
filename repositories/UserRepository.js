@@ -46,7 +46,6 @@ class UserRepository {
     }
 
     const { friendRequest, friends } = user;
-    console.log('Friends:', friends);
     
     const formattedFriends = friends.map(friend => ({
       firstName: friend.person.generalInformation.firstName,
@@ -55,7 +54,6 @@ class UserRepository {
       userId: friend._id.toString()
     }));
 
-    console.log('Formatted friends:', formattedFriends);
 
     return { friendRequest, friends: formattedFriends };
   }
