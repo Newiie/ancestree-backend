@@ -45,7 +45,7 @@ const jwtMiddleware = async (req, res, next) => {
       req.user = user;
       next();
   } catch (error) {
-      return res.status(401).json({ error: 'token missing or invalid' });
+      next(error);
   }
 };
 
@@ -72,7 +72,7 @@ const profileJwtMiddleware = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ error: 'token missing or invalid' });
+    next(error);
   }
 };
 
@@ -83,16 +83,8 @@ const unknownEndpoint = (request, response) => {
 const errorHandler = (error, request, response, next) => {
   console.log("LOGGER ERROR:", error);
   console.log("Error constructor:", error.constructor.name);
-
-  if (error instanceof MaxParentsError) {
-    return response.status(error.statusCode).json({ error: error.message });
-  }
-
-  if (InvalidObjectIdError === error.constructor || error.constructor == NotFoundError) {
-    return response.status(error.statusCode).json({ error: error.message });
-  }
-
-  switch (error.name) {
+ 
+  switch (error.constructor.name) {
     case 'CastError':
       return response.status(400).send({ error: 'malformatted id' });
     case 'ValidationError':
@@ -105,6 +97,7 @@ const errorHandler = (error, request, response, next) => {
     case 'JsonWebTokenError':
       return response.status(401).json({ error: 'token invalid' });
     case 'TokenExpiredError':
+      console.log("TOKEN EXPIRED");
       return response.status(401).json({ error: 'token expired' });
     default:
       if (error.statusCode) {
