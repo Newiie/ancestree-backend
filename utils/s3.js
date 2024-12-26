@@ -1,4 +1,4 @@
-const {S3Client, PutObjectCommand, GetObjectCommand} = require("@aws-sdk/client-s3");
+const {S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand} = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const crypto = require('crypto');
 
@@ -47,4 +47,14 @@ const uploadToS3 = async (file, fileName) => {
   return newFileName;
 };
 
-module.exports = { uploadToS3, getUrlImage };
+const deleteFromS3 = async (fileName) => {
+  const params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: fileName
+  };
+
+  const command = new DeleteObjectCommand(params);
+  await s3.send(command);
+};
+
+module.exports = { uploadToS3, getUrlImage, deleteFromS3 };

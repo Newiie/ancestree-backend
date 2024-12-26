@@ -1,4 +1,4 @@
-const { uploadToS3, getUrlImage } = require('../utils/s3');
+const { uploadToS3, getUrlImage, deleteFromS3 } = require('../utils/s3');
 
 class ImageService {
     /**
@@ -63,6 +63,24 @@ class ImageService {
      */
     static async uploadFamilyMemberPicture(file, identifier) {
         return this.uploadImage(file, 'familyMemberPicture', identifier);
+    }
+
+    /**
+     * Delete an image from S3
+     * @param {string} fileName - The filename of the image to delete
+     * @returns {Promise<void>}
+     */
+    static async deleteImage(fileName) {
+        if (!fileName) {
+            throw new Error('Filename is required for deletion');
+        }
+
+        try {
+            await deleteFromS3(fileName);
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            throw new Error('Failed to delete image');
+        }
     }
 }
 

@@ -1,0 +1,37 @@
+### Get User Records
+# Replace {userId} with an actual user ID
+GET http://localhost:3001/api/records/676a71c5c53c1acac5b5c218/albums
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhyb2NlbmFzIiwiaWQiOiI2NzZhNzFjNWM1M2MxYWNhYzViNWMyMTgiLCJpYXQiOjE3MzUyMjAwMjYsImV4cCI6MTczNTMwNjQyNn0.5Jf5OXAqzbLS7aRiXz27_d191jSLtLnjEnwSHQvGteA
+
+### Create Album
+# Replace {userId} with an actual user ID
+POST http://localhost:3001/api/records/676a71c5c53c1acac5b5c218/albums
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhyb2NlbmFzIiwiaWQiOiI2NzZhNzFjNWM1M2MxYWNhYzViNWMyMTgiLCJpYXQiOjE3MzUyMjAwMjYsImV4cCI6MTczNTMwNjQyNn0.5Jf5OXAqzbLS7aRiXz27_d191jSLtLnjEnwSHQvGteA
+Content-Type: application/json
+
+{
+    "name": "Summer Vacation 2025"
+}
+
+### Get Album
+# Replace {userId} and {albumId} with actual IDs
+GET http://localhost:3001/api/records/676a71c5c53c1acac5b5c218/albums/676d5d620788c0b3c9d509f3
+
+### Add Photos to Album
+# Replace {userId} and {albumId} with actual IDs
+POST http://localhost:3001/api/records/676a71c5c53c1acac5b5c218/albums/676d5d620788c0b3c9d509f3/photos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhyb2NlbmFzIiwiaWQiOiI2NzZhNzFjNWM1M2MxYWNhYzViNWMyMTgiLCJpYXQiOjE3MzUyMjAwMjYsImV4cCI6MTczNTMwNjQyNn0.5Jf5OXAqzbLS7aRiXz27_d191jSLtLnjEnwSHQvGteA
+Content-Type: multipart/form-data
+
+< ./photos/photo1.jpg
+< ./photos/photo2.jpg
+
+### Delete Album
+# Replace {userId} and {albumId} with actual IDs
+DELETE http://localhost:3001/api/records/676a71c5c53c1acac5b5c218/albums/676d59d9b32ad9b5c28037dc
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhyb2NlbmFzIiwiaWQiOiI2NzZhNzFjNWM1M2MxYWNhYzViNWMyMTgiLCJpYXQiOjE3MzUyMjAwMjYsImV4cCI6MTczNTMwNjQyNn0.5Jf5OXAqzbLS7aRiXz27_d191jSLtLnjEnwSHQvGteA
+
+### Delete Photo from Album
+# Replace {userId}, {albumId}, and {photoKey} with actual values
+DELETE http://localhost:3001/api/records/{userId}/albums/{albumId}/photos/{photoKey}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhyb2NlbmFzIiwiaWQiOiI2NzZhNzFjNWM1M2MxYWNhYzViNWMyMTgiLCJpYXQiOjE3MzUyMjAwMjYsImV4cCI6MTczNTMwNjQyNn0.5Jf5OXAqzbLS7aRiXz27_d191jSLtLnjEnwSHQvGteA

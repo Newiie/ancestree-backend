@@ -14,6 +14,8 @@ const usersRouter = require('./controllers/Users')
 const loginRouter = require('./controllers/Auth')
 const treeRouter = require('./controllers/Tree')
 const personRouter = require('./controllers/Person')
+const recordsRouter = require('./controllers/Records')
+
 
 const middleware = require('./utils/middleware')
 const logger = require('./utils/logger')
@@ -56,6 +58,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/trees', treeRouter)
 app.use('/api/person', personRouter)
+app.use('/api/records', recordsRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)

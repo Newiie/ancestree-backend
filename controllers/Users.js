@@ -1,15 +1,17 @@
 // routes/UsersRouter.js
 const express = require('express');
-const UserService = require('../services/UserService');
 const logger = require('../utils/logger');
 const { jwtMiddleware } = require('../utils/middleware');
 
 // SERVICES
 const FriendService = require('../services/FriendService');
 const NotificationService = require('../services/NotificationService');
+const UserService = require('../services/UserService');
+const RecordsService = require('../services/RecordsService');
 
 const UsersRouter = express.Router();
 
+//GET ALL USERS
 UsersRouter.get('/', async (request, response, next) => {
   try {
     const users = await UserService.getAllUsersWithRelations();
@@ -19,11 +21,14 @@ UsersRouter.get('/', async (request, response, next) => {
   }
 });
 
+// REGISTER USER
 UsersRouter.post('/', async (request, response, next) => {
   const { firstName, lastName, username, password } = request.body;
 
   try {
-    await UserService.createUser(firstName, lastName, username, password);
+    const user = await UserService.createUser(firstName, lastName, username, password);
+    console.log("REGISTERED USER", user);
+    await RecordsService.createRecord(user._id);
     response.status(201).json({ message: "Registered successfully!" });
   } catch (error) {
     logger.error('Error saving user:', error.message);
