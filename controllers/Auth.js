@@ -26,16 +26,26 @@ loginRouter.post('/', async (request, response) => {
     id: user._id,
   }
 
+  const isCompleted = user.progress ? user.progress.every(step => step.completed) : false;
+
   const token = jwt.sign(
-    userForToken, 
-    process.env.SECRET,
-    { expiresIn: 60*60*24 }
+    { 
+      username: user.username, 
+      id: user._id 
+    }, 
+    process.env.SECRET, 
+    { expiresIn: 60 * 60 }
   )
 
   logger.info({ token, username: user.username, id: user._id })
   response
       .status(200)
-      .send({ token, username: user.username, id: user._id })
+      .send({ 
+        token, 
+        username: user.username, 
+        id: user._id,
+        isCompleted
+      })
   } catch (error) {
     console.error('Error during login:', error);
     response.status(500).json({ error: 'Internal server error' });

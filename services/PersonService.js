@@ -20,10 +20,13 @@ class PersonService {
 
     static async findPersons(personDetails) {
         const persons = await PersonRepository.findPersonRelationship(personDetails);
+        console.log("PERSONS", persons);
         const personsWithImages = await Promise.all(
             persons.map(async (person) => ({
                 ...person,
-                profilePicture: await ImageService.getImageUrl(person.profilePicture)
+                profilePicture: person.profilePicture 
+                    ? await ImageService.getImageUrl(person.profilePicture) 
+                    : "/images/doge.png"
             }))
         );
         return personsWithImages;

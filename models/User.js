@@ -16,7 +16,15 @@ const UserSchema = new mongoose.Schema({
     ref: 'Person'
   },
   friendRequest: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  progress: [{
+    title: String,
+    description: String,
+    completed: {
+      type: Boolean,
+      default: false
+    }
+  }]
 });
 
 UserSchema.set('toJSON', {

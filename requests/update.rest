@@ -1,0 +1,4 @@
+#Can you access the update endpoint?
+GET http://localhost:3001/api/updates/family-events
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpldGhyb2NlbmFzIiwiaWQiOiI2NzcwMWZiMWIzZTczNWYxOGU4ZDk3YWQiLCJpYXQiOjE3MzU0NDQ0MDksImV4cCI6MTczNTQ0ODAwOX0.6jgnUWMdyUY_-MjaC6IDfG6NsXI1yljkDvVReDijGfU

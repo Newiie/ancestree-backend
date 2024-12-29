@@ -126,4 +126,55 @@ UsersRouter.post('/remove-friend-request/:friendId', jwtMiddleware, async (reque
   }  
 });
 
+// Get user progress
+UsersRouter.get('/progress', jwtMiddleware, async (request, response, next) => {
+  const userId = request.gUserID;
+
+  try {
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return response.status(404).json({ message: "User not found" });
+    }
+
+    response.status(200).json({ 
+      progress: user.progress,
+      isAllCompleted: user.progress.every(step => step.completed)
+    });
+  } catch (error) {
+    logger.error('Error fetching user progress:', error.message);
+    next(error);
+  }
+});
+
+// Update user progress
+UsersRouter.patch('/progress/:stepTitle', jwtMiddleware, async (request, response, next) => {
+  const { stepTitle } = request.params;
+  const userId = request.gUserID;
+
+  try {
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return response.status(404).json({ message: "User not found" });
+    }
+
+    const stepIndex = user.progress.findIndex(step => step.title === stepTitle);
+    if (stepIndex === -1) {
+      return response.status(404).json({ message: "Step not found" });
+    }
+
+    // Mark the specific step as completed
+    user.progress[stepIndex].completed = true;
+
+    await user.save();
+
+    response.status(200).json({ 
+      message: "Progress updated successfully",
+      updatedStep: user.progress[stepIndex]
+    });
+  } catch (error) {
+    logger.error('Error updating user progress:', error.message);
+    next(error);
+  }
+});
+
 module.exports = UsersRouter;

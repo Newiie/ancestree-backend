@@ -2,6 +2,7 @@ const express = require('express');
 const RecordsRouter = express.Router();
 const { jwtMiddleware, profileJwtMiddleware } = require('../utils/middleware');
 const { upload, isValidObjectId } = require('../utils/helper');
+const logger = require('../utils/logger');
 const RecordsService = require('../services/RecordsService');
 
 // Get all albums for a user
@@ -139,6 +140,38 @@ RecordsRouter.put('/:userId/albums/:albumId/photos/:photoKey', profileJwtMiddlew
     } catch (error) {
         next(error);
     }
+});
+
+// Get recent photos from all albums
+RecordsRouter.get('/recent-photos', jwtMiddleware, async (request, response, next) => {
+  const userId = request.gUserID;
+
+  try {
+    // Find all albums for the user
+    const albums = await RecordsService.getUserRecords(userId);
+    
+    // Log the entire albums array for inspection
+    logger.info('Albums retrieved:', JSON.stringify(albums, null, 2));
+    console.log('Albums retrieved:', albums);
+
+    // Collect all photos from all albums
+    const allPhotos = albums.flatMap(album => album.photos || []);
+
+    // Log the collected photos
+    logger.info('All Photos:', JSON.stringify(allPhotos, null, 2));
+    console.log('All Photos:', allPhotos);
+
+    // Return the recent photos
+    response.status(200).json({ 
+      memories: allPhotos
+        .sort((a, b) => new Date(b.uploadedAt || 0) - new Date(a.uploadedAt || 0))
+        .slice(0, 6)
+        .map(photo => ({ image: photo.url }))
+    });
+  } catch (error) {
+    logger.error('Error fetching recent photos:', error);
+    next(error);
+  }
 });
 
 module.exports = RecordsRouter;
