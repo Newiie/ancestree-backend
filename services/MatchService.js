@@ -97,7 +97,7 @@ class MatchService {
         // Notify all potential matches
         potentialMatches.forEach(match => {
             notificationPromises.push(
-                NotificationService.createNotification(match.userData.userId, 'A potential match was found in your family tree!', 'MATCH', match.personData.personId )
+                NotificationService.createNotification(match.userData.userId, 'A potential match was found in your family tree!', 'MATCH', gUserID )
             );
         });
 

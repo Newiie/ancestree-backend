@@ -64,12 +64,7 @@ class TreeService {
             throw new Error('Sender not found');
         }
 
-        await NotificationService.createNotification({
-            recipient: userId, 
-            message: `${sender.person.generalInformation.firstName} ${sender.person.generalInformation.lastName} wants to connect with you on Ancestree!`,
-            type: 'CONNECT',
-            relatedId: nodeId 
-        });
+        await NotificationService.createNotification(userId, `${sender.person.generalInformation.firstName} ${sender.person.generalInformation.lastName} wants to connect with you on Ancestree!`, 'CONNECT', nodeId);
         
         return { message: 'Connection request sent successfully' };
     }
@@ -100,19 +95,9 @@ class TreeService {
             throw new Error('User not found');
         }
 
-        await NotificationService.createNotification({
-            recipient: userId, 
-            message: `You are now connected with ${user.person.generalInformation.firstName} ${user.person.generalInformation.lastName} on Ancestree!`,
-            type: 'GENERAL',
-            relatedId: user._id 
-        });
+        await NotificationService.createNotification(userId, `You are now connected with ${user.person.generalInformation.firstName} ${user.person.generalInformation.lastName} on Ancestree!`, 'GENERAL', user._id);
 
-        await NotificationService.createNotification({
-            recipient: user._id, 
-            message: `You are now connected with ${person.generalInformation.firstName} ${person.generalInformation.lastName} on Ancestree!`,
-            type: 'GENERAL',
-            relatedId: userId
-        });
+        await NotificationService.createNotification(user._id, `You are now connected with ${person.generalInformation.firstName} ${person.generalInformation.lastName} on Ancestree!`, 'GENERAL', userId);
         
         await PersonRepository.updateRelatedUser(person._id, userId);
         return { message: 'Connection request accepted successfully' };

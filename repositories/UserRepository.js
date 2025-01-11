@@ -9,6 +9,12 @@ class UserRepository {
     return await user.save();
   }
 
+  static async removeFriendRequest(userId, requesterId) {
+    const user = await User.findById(userId);
+    user.friendRequest = user.friendRequest.filter(id => id != requesterId);
+    return await user.save();
+  }
+
   static async setFamilyTree(userId, familyTreeId) {
     const user = await User.findById(userId);
     user.familyTree = familyTreeId;
