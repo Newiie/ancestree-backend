@@ -8,10 +8,10 @@ const api = supertest(app);
 const { createUser, createPerson, createPersonNode, createFamilyTree } = require('./test_helper');
 
 // MODELS
-const Person = require('../models/person');
-const PersonNode = require('../models/personNode');
-const FamilyTree = require('../models/familyTree');
-const User = require('../models/user');
+const Person = require('../models/Person');
+const PersonNode = require('../models/PersonNode');
+const FamilyTree = require('../models/FamilyTree');
+const User = require('../models/User');
 
 describe('Tree Service Operations', () => {
     let userId;

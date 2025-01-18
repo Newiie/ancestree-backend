@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
+    "mockingoose": "^2.16.2",
     "nodemon": "^3.1.4",
     "supertest": "^7.0.0"
   }

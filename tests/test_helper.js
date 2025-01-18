@@ -1,9 +1,9 @@
 const bcrypt = require('bcrypt');
 
-const User = require('../models/user');
-const Person = require('../models/person');
-const PersonNode = require('../models/personNode');
-const FamilyTree = require('../models/familyTree');
+const User = require('../models/User');
+const Person = require('../models/Person');
+const PersonNode = require('../models/PersonNode');
+const FamilyTree = require('../models/FamilyTree');
 
 const createUser = async (username, password) => {
     const passwordHash = await bcrypt.hash(password, 10);
